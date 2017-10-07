@@ -86,7 +86,6 @@ const Map<ShapeOwnerSW *, int> &ShapeSW::get_owners() const {
 
 ShapeSW::ShapeSW() {
 
-	custom_bias = 0;
 	configured = false;
 }
 

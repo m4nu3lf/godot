@@ -205,12 +205,20 @@ public:
 	real_t get_weight() const;
 
 #ifndef DISABLE_DEPRECATED
+	Vector3 get_center_of_mass() const;
+
+	Basis get_principal_inertia_axes() const;
+
+	Vector3 get_inertia() const;
+
+	Basis get_inv_inertia_tensor() const;
+
 	void set_friction(real_t p_friction);
 	real_t get_friction() const;
 
 	void set_bounce(real_t p_bounce);
 	real_t get_bounce() const;
-#endif
+#endif // DISABLE_DEPRECATED
 
 	void set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override);
 	Ref<PhysicsMaterial> get_physics_material_override() const;

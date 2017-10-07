@@ -615,6 +615,7 @@ void RigidBody::set_mass(real_t p_mass) {
 	_change_notify("weight");
 	PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_MASS, mass);
 }
+
 real_t RigidBody::get_mass() const {
 
 	return mass;
@@ -630,6 +631,26 @@ real_t RigidBody::get_weight() const {
 }
 
 #ifndef DISABLE_DEPRECATED
+Vector3 RigidBody::get_center_of_mass() const {
+
+	return PhysicsServer::get_singleton()->body_get_center_of_mass(get_rid());
+}
+
+Basis RigidBody::get_principal_inertia_axes() const {
+
+	return PhysicsServer::get_singleton()->body_get_principal_inertia_axes(get_rid());
+}
+
+Vector3 RigidBody::get_inertia() const {
+
+	return PhysicsServer::get_singleton()->body_get_inv_inertia(get_rid()).inverse();
+}
+
+Basis RigidBody::get_inv_inertia_tensor() const {
+
+	return PhysicsServer::get_singleton()->body_get_inv_inertia_tensor(get_rid());
+}
+
 void RigidBody::set_friction(real_t p_friction) {
 
 	if (p_friction == 1.0 && physics_material_override.is_null()) { // default value, don't create an override for that
@@ -954,6 +975,14 @@ void RigidBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_weight"), &RigidBody::get_weight);
 
 #ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("get_center_of_mass"), &RigidBody::get_center_of_mass);
+
+	ClassDB::bind_method(D_METHOD("get_principal_inertia_axes"), &RigidBody::get_principal_inertia_axes);
+
+	ClassDB::bind_method(D_METHOD("get_inertia"), &RigidBody::get_inertia);
+
+	ClassDB::bind_method(D_METHOD("get_inv_inertia_tensor"), &RigidBody::get_inv_inertia_tensor);
+
 	ClassDB::bind_method(D_METHOD("set_friction", "friction"), &RigidBody::set_friction);
 	ClassDB::bind_method(D_METHOD("get_friction"), &RigidBody::get_friction);
 

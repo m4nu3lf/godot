@@ -35,6 +35,167 @@
 			</description>
 		</method>
 		<method name="add_force">
+				Apply a positioned impulse (which will be affected by the body mass and shape). This is the equivalent of hitting a billiard ball with a cue: a force that is applied once, and only once. Both the impulse and the offset from the body origin are in global coordinates.
+			</description>
+		</method>
+		<method name="get_angular_damp" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the current body angular damp. Default is -1.
+			</description>
+		</method>
+		<method name="get_angular_velocity" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				Return the current body angular velocity.
+			</description>
+		</method>
+		<method name="get_axis_lock" qualifiers="const">
+			<return type="int" enum="RigidBody.AxisLock">
+			</return>
+			<description>
+				Return the current axis lock of the body. One of AXIS_LOCK_* enum.
+			</description>
+		</method>
+		<method name="get_bounce" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the current body bounciness.
+			</description>
+		</method>
+		<method name="get_center_of_mass" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				Return the body center of mass offset with respect to the body origin in global coordinates.
+			</description>
+		</method>
+		<method name="get_colliding_bodies" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Return a list of the bodies colliding with this one. By default, number of max contacts reported is at 0 , see [method set_max_contacts_reported] to increase it.
+			</description>
+		</method>
+		<method name="get_friction" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the current body friction, from 0 (frictionless) to 1 (max friction).
+			</description>
+		</method>
+		<method name="get_gravity_scale" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the current body gravity scale.
+			</description>
+		</method>
+		<method name="get_inertia" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				Return the vector of inertia for the principal axes of inertia. It is the diagonal of the
+				inertia tensor in the principal axes of inertia frame of reference.
+			</description>
+		</method>
+		<method name="get_inv_inertia_tensor" qualifiers="const">
+			<return type="Basis">
+			</return>
+			<description>
+				Return the inverse inertia tensor in global coordinates.
+			</description>
+		</method>
+		<method name="get_linear_damp" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the current body linear damp. Default is -1.
+			</description>
+		</method>
+		<method name="get_linear_velocity" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				Return the current body linear velocity.
+			</description>
+		</method>
+		<method name="get_mass" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the current body mass.
+			</description>
+		</method>
+		<method name="get_max_contacts_reported" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the maximum contacts that can be reported. See [method set_max_contacts_reported].
+			</description>
+		</method>
+		<method name="get_mode" qualifiers="const">
+			<return type="int" enum="RigidBody.Mode">
+			</return>
+			<description>
+				Return the current body mode, see [method set_mode].
+			</description>
+		</method>
+		<method name="get_principal_inertia_axes" qualifiers="const">
+			<return type="Basis">
+			</return>
+			<description>
+				Return the principal axes of inertia in global coordinates as columns of a Basis.
+				The returned basis can be used as transform from coordinates in the principal axes frame
+				of reference to the global frame of reference.
+			</description>
+		</method>
+		<method name="get_weight" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the current body weight
+			</description>
+		</method>
+		<method name="is_able_to_sleep" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether the body has the ability to fall asleep when not moving. See [method set_can_sleep].
+			</description>
+		</method>
+		<method name="is_contact_monitor_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether contact monitoring is enabled.
+			</description>
+		</method>
+		<method name="is_sleeping" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether the body is sleeping.
+			</description>
+		</method>
+		<method name="is_using_continuous_collision_detection" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether this body is using continuous collision detection.
+			</description>
+		</method>
+		<method name="is_using_custom_integrator">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether the body is using a custom integrator.
+			</description>
+		</method>
+		<method name="set_angular_damp">
 			<return type="void">
 			</return>
 			<argument index="0" name="force" type="Vector3">

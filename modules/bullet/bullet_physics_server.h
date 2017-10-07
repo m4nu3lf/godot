@@ -111,6 +111,10 @@ public:
 	/// Not supported
 	virtual real_t space_get_param(RID p_space, SpaceParameter p_param) const;
 
+
+	virtual void space_set_constraint_priority(RID p_space, int p_priority) {};
+	virtual int space_get_constraint_priority(RID p_space) const { return 0; };
+
 	virtual PhysicsDirectSpaceState *space_get_direct_state(RID p_space);
 
 	virtual void space_set_debug_contacts(RID p_space, int p_max_contacts);
@@ -187,6 +191,19 @@ public:
 
 	virtual void body_remove_shape(RID p_body, int p_shape_idx);
 	virtual void body_clear_shapes(RID p_body);
+
+
+	virtual void body_set_shape_custom_solver_bias(RID p_body, int p_shape_idx, real_t p_bias) {};
+	virtual void body_set_shape_custom_solver_priority(RID p_body, int p_shape_idx, int p_priority) {};
+
+
+	virtual Vector3 body_get_center_of_mass(RID p_body) const { return Vector3(); };
+
+	virtual Basis body_get_principal_inertia_axes(RID p_body) const { return Basis(); };
+
+	virtual Vector3 body_get_inv_inertia(RID p_body) const { return Vector3(); };
+
+	virtual Basis body_get_inv_inertia_tensor(RID p_body) const { return Basis(); };
 
 	// Used for Rigid and Soft Bodies
 	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_ID);
