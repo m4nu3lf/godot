@@ -335,6 +335,12 @@ private:
 
 	void _compute_weights(float *p_fallback_weight, HashMap<NodePath, float> *p_weights, float p_coeff, const HashMap<NodePath, bool> *p_filter = NULL, float p_filtered_coeff = 0);
 
+	/* Automatic node arrangment utilities */
+	void _translate_subtree(NodeBase *p_node, Point2 p_offset);
+	void _subtree_extents_by_level(NodeBase *p_node, int p_depth, Vector<float> *r_min_ys, Vector<float> *r_max_ys);
+	float _min_subtree_dist(NodeBase *p_node, int p_child_a, int p_child_b);
+	void _auto_place_nodes(NodeBase *p_node, Point2 *r_min_xy, Point2 *r_max_xy);
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -352,6 +358,7 @@ public:
 	StringName node_get_input_source(const StringName &p_node, int p_input) const;
 
 	String get_configuration_warning() const;
+	void auto_place_nodes();
 
 	/* ANIMATION NODE */
 	void animation_node_set_animation(const StringName &p_node, const Ref<Animation> &p_animation);
