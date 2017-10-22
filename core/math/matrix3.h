@@ -88,7 +88,7 @@ public:
 	Vector3 get_euler_yxz() const;
 	void set_euler_yxz(const Vector3 &p_euler);
 
-	Vector3 get_euler() const { return get_euler_yxz(); };
+	Vector3 get_euler() const { return get_euler_xyz(); };
 	void set_euler(const Vector3 &p_euler) { set_euler_yxz(p_euler); };
 
 	void get_axis_angle(Vector3 &r_axis, real_t &r_angle) const;
