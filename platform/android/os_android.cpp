@@ -65,12 +65,6 @@ const char *OS_Android::get_video_driver_name(int p_driver) const {
 
 	return "GLES2";
 }
-
-OS::VideoMode OS_Android::get_default_video_mode() const {
-
-	return OS::VideoMode();
-}
-
 int OS_Android::get_audio_driver_count() const {
 
 	return 1;
@@ -496,6 +490,11 @@ void OS_Android::process_accelerometer(const Vector3 &p_accelerometer) {
 	input->set_accelerometer(p_accelerometer);
 }
 
+void OS_Android::process_gravity(const Vector3 &p_gravity) {
+
+	input->set_gravity(p_gravity);
+}
+
 void OS_Android::process_magnetometer(const Vector3 &p_magnetometer) {
 
 	input->set_magnetometer(p_magnetometer);
@@ -642,7 +641,7 @@ String OS_Android::get_data_dir() const {
 	}
 
 	return ".";
-	//return ProjectSettings::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
+	//return Engine::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
 }
 
 void OS_Android::set_screen_orientation(ScreenOrientation p_orientation) {

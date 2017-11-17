@@ -53,7 +53,7 @@ extern "C" {
 
 // This is for libraries *using* the header, NOT GODOT EXPOSING STUFF!!
 #ifdef _WIN32
-#define GDN_EXPORT __declspec(dllexport)
+#define GDN_EXPORT
 #else
 #define GDN_EXPORT
 #endif
@@ -169,9 +169,9 @@ typedef void godot_object;
 
 #include <gdnative/quat.h>
 
-/////// Rect3
+/////// AABB
 
-#include <gdnative/rect3.h>
+#include <gdnative/aabb.h>
 
 /////// Basis
 
@@ -237,7 +237,7 @@ typedef struct {
 	uint64_t editor_api_hash;
 	uint64_t no_api_hash;
 	godot_object *gd_native_library; // pointer to GDNativeLibrary that is being initialized
-	const struct godot_gdnative_api_struct *api_struct;
+	const struct godot_gdnative_core_api_struct *api_struct;
 	const godot_string *active_library_path;
 } godot_gdnative_init_options;
 

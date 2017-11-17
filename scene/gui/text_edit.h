@@ -51,11 +51,14 @@ class TextEdit : public Control {
 
 			MODE_NONE,
 			MODE_SHIFT,
-			MODE_POINTER
+			MODE_POINTER,
+			MODE_WORD,
+			MODE_LINE
 		};
 
 		Mode selecting_mode;
 		int selecting_line, selecting_column;
+		int selected_word_beg, selected_word_end, selected_word_origin;
 		bool selecting_text;
 
 		bool active;
@@ -305,6 +308,10 @@ class TextEdit : public Control {
 	void _v_scroll_input();
 	void _click_selection_held();
 
+	void _update_selection_mode_pointer();
+	void _update_selection_mode_word();
+	void _update_selection_mode_line();
+
 	void _pre_shift_selection();
 	void _post_shift_selection();
 
@@ -441,6 +448,7 @@ public:
 	bool cursor_is_block_mode() const;
 
 	void set_readonly(bool p_readonly);
+	bool is_readonly() const;
 
 	void set_max_chars(int p_max_chars);
 	void set_wrap(bool p_wrap);
@@ -456,6 +464,7 @@ public:
 	void select_all();
 	void select(int p_from_line, int p_from_column, int p_to_line, int p_to_column);
 	void deselect();
+	void swap_lines(int line1, int line2);
 
 	void set_search_text(const String &p_search_text);
 	void set_search_flags(uint32_t p_flags);
@@ -540,6 +549,8 @@ public:
 	bool is_selecting_identifiers_on_hover_enabled() const;
 
 	void set_context_menu_enabled(bool p_enable);
+	bool is_context_menu_enabled();
+
 	PopupMenu *get_menu() const;
 
 	String get_text_for_completion();

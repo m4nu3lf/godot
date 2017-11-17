@@ -1847,6 +1847,25 @@ Control *Control::find_next_valid_focus() const {
 
 	while (true) {
 
+		// If the focus property is manually overwritten, attempt to use it.
+
+		if (!data.focus_next.is_empty()) {
+			Node *n = get_node(data.focus_next);
+			if (n) {
+				from = Object::cast_to<Control>(n);
+
+				if (!from) {
+
+					ERR_EXPLAIN("Next focus node is not a control: " + n->get_name());
+					ERR_FAIL_V(NULL);
+				}
+			} else {
+				return NULL;
+			}
+			if (from->is_visible() && from->get_focus_mode() != FOCUS_NONE)
+				return from;
+		}
+
 		// find next child
 
 		Control *next_child = NULL;
@@ -1925,6 +1944,25 @@ Control *Control::find_prev_valid_focus() const {
 	Control *from = const_cast<Control *>(this);
 
 	while (true) {
+
+		// If the focus property is manually overwritten, attempt to use it.
+
+		if (!data.focus_prev.is_empty()) {
+			Node *n = get_node(data.focus_prev);
+			if (n) {
+				from = Object::cast_to<Control>(n);
+
+				if (!from) {
+
+					ERR_EXPLAIN("Prev focus node is not a control: " + n->get_name());
+					ERR_FAIL_V(NULL);
+				}
+			} else {
+				return NULL;
+			}
+			if (from->is_visible() && from->get_focus_mode() != FOCUS_NONE)
+				return from;
+		}
 
 		// find prev child
 
@@ -2157,6 +2195,26 @@ NodePath Control::get_focus_neighbour(Margin p_margin) const {
 	return data.focus_neighbour[p_margin];
 }
 
+void Control::set_focus_next(const NodePath &p_next) {
+
+	data.focus_next = p_next;
+}
+
+NodePath Control::get_focus_next() const {
+
+	return data.focus_next;
+}
+
+void Control::set_focus_previous(const NodePath &p_prev) {
+
+	data.focus_prev = p_prev;
+}
+
+NodePath Control::get_focus_previous() const {
+
+	return data.focus_prev;
+}
+
 #define MAX_NEIGHBOUR_SEARCH_COUNT 512
 
 Control *Control::_get_focus_neighbour(Margin p_margin, int p_count) {
@@ -2172,7 +2230,7 @@ Control *Control::_get_focus_neighbour(Margin p_margin, int p_count) {
 
 			if (!c) {
 
-				ERR_EXPLAIN("Next focus node is not a control: " + n->get_name());
+				ERR_EXPLAIN("Neighbour focus node is not a control: " + n->get_name());
 				ERR_FAIL_V(NULL);
 			}
 		} else {
@@ -2416,24 +2474,14 @@ float Control::get_rotation() const {
 	return data.rotation;
 }
 
-void Control::set_rotation_deg(float p_degrees) {
+void Control::set_rotation_degrees(float p_degrees) {
 	set_rotation(Math::deg2rad(p_degrees));
 }
 
-float Control::get_rotation_deg() const {
+float Control::get_rotation_degrees() const {
 	return Math::rad2deg(get_rotation());
 }
 
-// Kept for compatibility after rename to {s,g}et_rotation_deg.
-// Could be removed after a couple releases.
-void Control::_set_rotation_deg(float p_degrees) {
-	WARN_PRINT("Deprecated method Control._set_rotation_deg(): This method was renamed to set_rotation_deg. Please adapt your code accordingly, as the old method will be obsoleted.");
-	set_rotation_deg(p_degrees);
-}
-float Control::_get_rotation_deg() const {
-	WARN_PRINT("Deprecated method Control._get_rotation_deg(): This method was renamed to get_rotation_deg. Please adapt your code accordingly, as the old method will be obsoleted.");
-	return get_rotation_deg();
-}
 //needed to update the control if the font changes..
 void Control::_ref_font(Ref<Font> p_sc) {
 
@@ -2606,9 +2654,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom_minimum_size", "size"), &Control::set_custom_minimum_size);
 	ClassDB::bind_method(D_METHOD("set_global_position", "position"), &Control::set_global_position);
 	ClassDB::bind_method(D_METHOD("set_rotation", "radians"), &Control::set_rotation);
-	ClassDB::bind_method(D_METHOD("set_rotation_deg", "degrees"), &Control::set_rotation_deg);
-	// TODO: Obsolete this method (old name) properly (GH-4397)
-	ClassDB::bind_method(D_METHOD("_set_rotation_deg", "degrees"), &Control::_set_rotation_deg);
+	ClassDB::bind_method(D_METHOD("set_rotation_degrees", "degrees"), &Control::set_rotation_degrees);
 	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &Control::set_scale);
 	ClassDB::bind_method(D_METHOD("set_pivot_offset", "pivot_offset"), &Control::set_pivot_offset);
 	ClassDB::bind_method(D_METHOD("get_margin", "margin"), &Control::get_margin);
@@ -2617,9 +2663,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_position"), &Control::get_position);
 	ClassDB::bind_method(D_METHOD("get_size"), &Control::get_size);
 	ClassDB::bind_method(D_METHOD("get_rotation"), &Control::get_rotation);
-	ClassDB::bind_method(D_METHOD("get_rotation_deg"), &Control::get_rotation_deg);
-	// TODO: Obsolete this method (old name) properly (GH-4397)
-	ClassDB::bind_method(D_METHOD("_get_rotation_deg"), &Control::_get_rotation_deg);
+	ClassDB::bind_method(D_METHOD("get_rotation_degrees"), &Control::get_rotation_degrees);
 	ClassDB::bind_method(D_METHOD("get_scale"), &Control::get_scale);
 	ClassDB::bind_method(D_METHOD("get_pivot_offset"), &Control::get_pivot_offset);
 	ClassDB::bind_method(D_METHOD("get_custom_minimum_size"), &Control::get_custom_minimum_size);
@@ -2691,6 +2735,12 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_focus_neighbour", "margin", "neighbour"), &Control::set_focus_neighbour);
 	ClassDB::bind_method(D_METHOD("get_focus_neighbour", "margin"), &Control::get_focus_neighbour);
 
+	ClassDB::bind_method(D_METHOD("set_focus_next", "next"), &Control::set_focus_next);
+	ClassDB::bind_method(D_METHOD("get_focus_next"), &Control::get_focus_next);
+
+	ClassDB::bind_method(D_METHOD("set_focus_previous", "previous"), &Control::set_focus_previous);
+	ClassDB::bind_method(D_METHOD("get_focus_previous"), &Control::get_focus_previous);
+
 	ClassDB::bind_method(D_METHOD("force_drag", "data", "preview"), &Control::force_drag);
 
 	ClassDB::bind_method(D_METHOD("set_mouse_filter", "filter"), &Control::set_mouse_filter);
@@ -2738,7 +2788,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2, "rect_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_position", "get_position");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2, "rect_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_size", "get_size");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2, "rect_min_size"), "set_custom_minimum_size", "get_custom_minimum_size");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "rect_rotation", PROPERTY_HINT_RANGE, "-1080,1080,0.01"), "set_rotation_deg", "get_rotation_deg");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "rect_rotation", PROPERTY_HINT_RANGE, "-1080,1080,0.01"), "set_rotation_degrees", "get_rotation_degrees");
 	ADD_PROPERTYNO(PropertyInfo(Variant::VECTOR2, "rect_scale"), "set_scale", "get_scale");
 	ADD_PROPERTYNO(PropertyInfo(Variant::VECTOR2, "rect_pivot_offset"), "set_pivot_offset", "get_pivot_offset");
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "rect_clip_content"), "set_clip_contents", "is_clipping_contents");
@@ -2751,6 +2801,8 @@ void Control::_bind_methods() {
 	ADD_PROPERTYINZ(PropertyInfo(Variant::NODE_PATH, "focus_neighbour_top"), "set_focus_neighbour", "get_focus_neighbour", MARGIN_TOP);
 	ADD_PROPERTYINZ(PropertyInfo(Variant::NODE_PATH, "focus_neighbour_right"), "set_focus_neighbour", "get_focus_neighbour", MARGIN_RIGHT);
 	ADD_PROPERTYINZ(PropertyInfo(Variant::NODE_PATH, "focus_neighbour_bottom"), "set_focus_neighbour", "get_focus_neighbour", MARGIN_BOTTOM);
+	ADD_PROPERTYNZ(PropertyInfo(Variant::NODE_PATH, "focus_next"), "set_focus_next", "get_focus_next");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::NODE_PATH, "focus_previous"), "set_focus_previous", "get_focus_previous");
 
 	ADD_GROUP("Mouse", "mouse_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_filter", PROPERTY_HINT_ENUM, "Stop,Pass,Ignore"), "set_mouse_filter", "get_mouse_filter");

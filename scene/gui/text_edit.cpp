@@ -376,24 +376,116 @@ void TextEdit::_update_scrollbars() {
 void TextEdit::_click_selection_held() {
 
 	if (Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT) && selection.selecting_mode != Selection::MODE_NONE) {
-
-		Point2 mp = Input::get_singleton()->get_mouse_position() - get_global_position();
-
-		int row, col;
-		_get_mouse_pos(Point2i(mp.x, mp.y), row, col);
-
-		select(selection.selecting_line, selection.selecting_column, row, col);
-
-		cursor_set_line(row);
-		cursor_set_column(col);
-		update();
-
-		click_select_held->start();
-
+		switch (selection.selecting_mode) {
+			case Selection::MODE_POINTER: {
+				_update_selection_mode_pointer();
+			} break;
+			case Selection::MODE_WORD: {
+				_update_selection_mode_word();
+			} break;
+			case Selection::MODE_LINE: {
+				_update_selection_mode_line();
+			} break;
+			default: {
+				break;
+			}
+		}
 	} else {
-
 		click_select_held->stop();
 	}
+}
+
+void TextEdit::_update_selection_mode_pointer() {
+	Point2 mp = Input::get_singleton()->get_mouse_position() - get_global_position();
+
+	int row, col;
+	_get_mouse_pos(Point2i(mp.x, mp.y), row, col);
+
+	select(selection.selecting_line, selection.selecting_column, row, col);
+
+	cursor_set_line(row);
+	cursor_set_column(col);
+	update();
+
+	click_select_held->start();
+}
+
+void TextEdit::_update_selection_mode_word() {
+	Point2 mp = Input::get_singleton()->get_mouse_position() - get_global_position();
+
+	int row, col;
+	_get_mouse_pos(Point2i(mp.x, mp.y), row, col);
+
+	String line = text[row];
+	int beg = CLAMP(col, 0, line.length());
+	// if its the first selection and on whitespace make sure we grab the word instead..
+	if (!selection.active) {
+		while (beg > 0 && line[beg] <= 32) {
+			beg--;
+		}
+	}
+	int end = beg;
+	bool symbol = beg < line.length() && _is_symbol(line[beg]);
+
+	// get the word end and begin points
+	while (beg > 0 && line[beg - 1] > 32 && (symbol == _is_symbol(line[beg - 1]))) {
+		beg--;
+	}
+	while (end < line.length() && line[end + 1] > 32 && (symbol == _is_symbol(line[end + 1]))) {
+		end++;
+	}
+	if (end < line.length()) {
+		end += 1;
+	}
+
+	// inital selection
+	if (!selection.active) {
+		select(row, beg, row, end);
+		selection.selecting_column = beg;
+		selection.selected_word_beg = beg;
+		selection.selected_word_end = end;
+		selection.selected_word_origin = beg;
+		cursor_set_column(selection.to_column);
+	} else {
+		if ((col <= selection.selected_word_origin && row == selection.selecting_line) || row < selection.selecting_line) {
+			selection.selecting_column = selection.selected_word_end;
+			select(row, beg, selection.selecting_line, selection.selected_word_end);
+			cursor_set_column(selection.from_column);
+		} else {
+			selection.selecting_column = selection.selected_word_beg;
+			select(selection.selecting_line, selection.selected_word_beg, row, end);
+			cursor_set_column(selection.to_column);
+		}
+	}
+	cursor_set_line(row);
+
+	update();
+	click_select_held->start();
+}
+
+void TextEdit::_update_selection_mode_line() {
+	Point2 mp = Input::get_singleton()->get_mouse_position() - get_global_position();
+
+	int row, col;
+	_get_mouse_pos(Point2i(mp.x, mp.y), row, col);
+
+	col = 0;
+	if (row < selection.selecting_line) {
+		// cursor is above us
+		cursor_set_line(row - 1);
+		selection.selecting_column = text[selection.selecting_line].length();
+	} else {
+		// cursor is below us
+		cursor_set_line(row + 1);
+		selection.selecting_column = 0;
+		col = text[row].length();
+	}
+	cursor_set_column(0);
+
+	select(selection.selecting_line, selection.selecting_column, row, col);
+	update();
+
+	click_select_held->start();
 }
 
 void TextEdit::_notification(int p_what) {
@@ -802,17 +894,18 @@ void TextEdit::_notification(int p_what) {
 							is_hex_notation = false;
 						}
 
-						// check for dot or 'x' for hex notation in floating point number
-						if ((str[j] == '.' || str[j] == 'x') && !in_word && prev_is_number && !is_number) {
+						// check for dot or underscore or 'x' for hex notation in floating point number
+						if ((str[j] == '.' || str[j] == 'x' || str[j] == '_') && !in_word && prev_is_number && !is_number) {
 							is_number = true;
 							is_symbol = false;
+							is_char = false;
 
 							if (str[j] == 'x' && str[j - 1] == '0') {
 								is_hex_notation = true;
 							}
 						}
 
-						if (!in_word && _is_char(str[j])) {
+						if (!in_word && _is_char(str[j]) && !is_number) {
 							in_word = true;
 						}
 
@@ -1759,36 +1852,15 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				if (!mb->is_doubleclick() && (OS::get_singleton()->get_ticks_msec() - last_dblclk) < 600 && cursor.line == prev_line) {
 					//tripleclick select line
-					select(cursor.line, 0, cursor.line, text[cursor.line].length());
-					selection.selecting_column = 0;
+					selection.selecting_mode = Selection::MODE_LINE;
+					_update_selection_mode_line();
 					last_dblclk = 0;
 
 				} else if (mb->is_doubleclick() && text[cursor.line].length()) {
 
 					//doubleclick select world
-					String s = text[cursor.line];
-					int beg = CLAMP(cursor.column, 0, s.length());
-					int end = beg;
-
-					if (s[beg] > 32 || beg == s.length()) {
-
-						bool symbol = beg < s.length() && _is_symbol(s[beg]); //not sure if right but most editors behave like this
-
-						while (beg > 0 && s[beg - 1] > 32 && (symbol == _is_symbol(s[beg - 1]))) {
-							beg--;
-						}
-						while (end < s.length() && s[end + 1] > 32 && (symbol == _is_symbol(s[end + 1]))) {
-							end++;
-						}
-
-						if (end < s.length())
-							end += 1;
-
-						select(cursor.line, beg, cursor.line, end);
-
-						selection.selecting_column = beg;
-					}
-
+					selection.selecting_mode = Selection::MODE_WORD;
+					_update_selection_mode_word();
 					last_dblclk = OS::get_singleton()->get_ticks_msec();
 				}
 
@@ -1833,21 +1905,21 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 
 		if (mm->get_button_mask() & BUTTON_MASK_LEFT && get_viewport()->gui_get_drag_data() == Variant()) { //ignore if dragging
+			_reset_caret_blink_timer();
 
-			if (selection.selecting_mode != Selection::MODE_NONE) {
-
-				_reset_caret_blink_timer();
-
-				int row, col;
-				_get_mouse_pos(mm->get_position(), row, col);
-
-				select(selection.selecting_line, selection.selecting_column, row, col);
-
-				cursor_set_line(row);
-				cursor_set_column(col);
-				update();
-
-				click_select_held->start();
+			switch (selection.selecting_mode) {
+				case Selection::MODE_POINTER: {
+					_update_selection_mode_pointer();
+				} break;
+				case Selection::MODE_WORD: {
+					_update_selection_mode_word();
+				} break;
+				case Selection::MODE_LINE: {
+					_update_selection_mode_line();
+				} break;
+				default: {
+					break;
+				}
 			}
 		}
 	}
@@ -1969,6 +2041,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 						_confirm_completion();
 						accept_event();
+						emit_signal("request_completion");
 						return;
 					}
 
@@ -2847,19 +2920,19 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		if (scancode_handled)
 			accept_event();
 		/*
-    if (!scancode_handled && !k->get_command() && !k->get_alt()) {
+	if (!scancode_handled && !k->get_command() && !k->get_alt()) {
 
 	if (k->get_unicode()>=32) {
 
-	    if (readonly)
+		if (readonly)
 		break;
 
-	    accept_event();
+		accept_event();
 	} else {
 
-	    break;
+		break;
 	}
-    }
+	}
 */
 		if (k->get_scancode() == KEY_INSERT) {
 			set_insert_mode(!insert_mode);
@@ -3251,11 +3324,11 @@ void TextEdit::adjust_viewport_to_cursor() {
 
 	update();
 	/*
-    get_range()->set_max(text.size());
+	get_range()->set_max(text.size());
 
-    get_range()->set_page(get_visible_rows());
+	get_range()->set_page(get_visible_rows());
 
-    get_range()->set((int)cursor.line_ofs);
+	get_range()->set((int)cursor.line_ofs);
 */
 }
 
@@ -3597,6 +3670,11 @@ void TextEdit::set_readonly(bool p_readonly) {
 	readonly = p_readonly;
 }
 
+bool TextEdit::is_readonly() const {
+
+	return readonly;
+}
+
 void TextEdit::set_wrap(bool p_wrap) {
 
 	wrap = p_wrap;
@@ -3829,7 +3907,12 @@ void TextEdit::select(int p_from_line, int p_from_column, int p_to_line, int p_t
 
 	update();
 }
-
+void TextEdit::swap_lines(int line1, int line2) {
+	String tmp = get_line(line1);
+	String tmp2 = get_line(line2);
+	set_line(line2, tmp);
+	set_line(line1, tmp2);
+}
 bool TextEdit::is_selection_active() const {
 
 	return selection.active;
@@ -4795,6 +4878,10 @@ void TextEdit::set_context_menu_enabled(bool p_enable) {
 	context_menu_enabled = p_enable;
 }
 
+bool TextEdit::is_context_menu_enabled() {
+	return context_menu_enabled;
+}
+
 PopupMenu *TextEdit::get_menu() const {
 	return menu;
 }
@@ -4815,8 +4902,8 @@ void TextEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(SEARCH_BACKWARDS);
 
 	/*
-    ClassDB::bind_method(D_METHOD("delete_char"),&TextEdit::delete_char);
-    ClassDB::bind_method(D_METHOD("delete_line"),&TextEdit::delete_line);
+	ClassDB::bind_method(D_METHOD("delete_char"),&TextEdit::delete_char);
+	ClassDB::bind_method(D_METHOD("delete_line"),&TextEdit::delete_line);
 */
 
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &TextEdit::set_text);
@@ -4839,8 +4926,12 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("cursor_is_block_mode"), &TextEdit::cursor_is_block_mode);
 
 	ClassDB::bind_method(D_METHOD("set_readonly", "enable"), &TextEdit::set_readonly);
+	ClassDB::bind_method(D_METHOD("is_readonly"), &TextEdit::is_readonly);
+
 	ClassDB::bind_method(D_METHOD("set_wrap", "enable"), &TextEdit::set_wrap);
 	ClassDB::bind_method(D_METHOD("set_max_chars", "amount"), &TextEdit::set_max_chars);
+	ClassDB::bind_method(D_METHOD("set_context_menu_enabled", "enable"), &TextEdit::set_context_menu_enabled);
+	ClassDB::bind_method(D_METHOD("is_context_menu_enabled"), &TextEdit::is_context_menu_enabled);
 
 	ClassDB::bind_method(D_METHOD("cut"), &TextEdit::cut);
 	ClassDB::bind_method(D_METHOD("copy"), &TextEdit::copy);
@@ -4887,11 +4978,14 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("menu_option", "option"), &TextEdit::menu_option);
 	ClassDB::bind_method(D_METHOD("get_menu"), &TextEdit::get_menu);
 
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "readonly"), "set_readonly", "is_readonly");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_current_line"), "set_highlight_current_line", "is_highlight_current_line_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "syntax_highlighting"), "set_syntax_coloring", "is_syntax_coloring_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_line_numbers"), "set_show_line_numbers", "is_show_line_numbers_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_all_occurrences"), "set_highlight_all_occurrences", "is_highlight_all_occurrences_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_selected_font_color"), "set_override_selected_font_color", "is_overriding_selected_font_color");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "context_menu_enabled"), "set_context_menu_enabled", "is_context_menu_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_scrolling"), "set_smooth_scroll_enable", "is_smooth_scroll_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "v_scroll_speed"), "set_v_scroll_speed", "get_v_scroll_speed");
 

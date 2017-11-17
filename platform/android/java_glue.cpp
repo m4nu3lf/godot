@@ -34,6 +34,7 @@
 #include "audio_driver_jandroid.h"
 #include "core/os/keyboard.h"
 #include "dir_access_jandroid.h"
+#include "engine.h"
 #include "file_access_android.h"
 #include "file_access_jandroid.h"
 #include "java_class_wrapper.h"
@@ -608,6 +609,7 @@ static bool resized = false;
 static bool resized_reload = false;
 static Size2 new_size;
 static Vector3 accelerometer;
+static Vector3 gravity;
 static Vector3 magnetometer;
 static Vector3 gyroscope;
 static HashMap<String, JNISingleton *> jni_singletons;
@@ -952,7 +954,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jo
 	__android_log_print(ANDROID_LOG_INFO, "godot", "*****SETUP OK");
 
 	java_class_wrapper = memnew(JavaClassWrapper(_godot_instance));
-	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("JavaClassWrapper", java_class_wrapper));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("JavaClassWrapper", java_class_wrapper));
 	_initialize_java_modules();
 }
 
@@ -1011,6 +1013,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, job
 	//__android_log_print(ANDROID_LOG_INFO,"godot","**STEP EVENT! - %p-%i\n",env,Thread::get_caller_id());
 
 	os_android->process_accelerometer(accelerometer);
+
+	os_android->process_gravity(gravity);
 
 	os_android->process_magnetometer(magnetometer);
 
@@ -1386,6 +1390,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_accelerometer(JNIEnv 
 	accelerometer = Vector3(x, y, z);
 }
 
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_gravity(JNIEnv *env, jobject obj, jfloat x, jfloat y, jfloat z) {
+	gravity = Vector3(x, y, z);
+}
+
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_magnetometer(JNIEnv *env, jobject obj, jfloat x, jfloat y, jfloat z) {
 	magnetometer = Vector3(x, y, z);
 }
@@ -1419,7 +1427,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_singleton(JNIEnv *env
 	s->set_instance(env->NewGlobalRef(p_object));
 	jni_singletons[singname] = s;
 
-	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton(singname, s));
+	Engine::get_singleton()->add_singleton(Engine::Singleton(singname, s));
 	ProjectSettings::get_singleton()->set(singname, s);
 }
 

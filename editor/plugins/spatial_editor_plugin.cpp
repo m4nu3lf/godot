@@ -1255,7 +1255,6 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 						Vector3 motion_mask;
 						Plane plane;
-						bool plane_mv;
 
 						switch (_edit.plane) {
 							case TRANSFORM_VIEW:
@@ -1285,12 +1284,10 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							break;
 
 						Vector3 motion = intersection - click;
-						print_line(String(intersection) + " --- " + String(click));
 						if (motion_mask != Vector3()) {
-
 							motion = motion_mask.dot(motion) * motion_mask;
-						} else {
 
+						} else {
 							float center_click_dist = click.distance_to(_edit.center);
 							float center_inters_dist = intersection.distance_to(_edit.center);
 							if (center_click_dist == 0)
@@ -1302,12 +1299,19 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 						List<Node *> &selection = editor_selection->get_selected_node_list();
 
-						bool local_coords = (spatial_editor->are_local_coords_enabled() && motion_mask != Vector3()); // Disable local transformation for TRANSFORM_VIEW
+						bool local_coords = (spatial_editor->are_local_coords_enabled() && _edit.plane != TRANSFORM_VIEW); // Disable local transformation for TRANSFORM_VIEW
 
 						float snap = 0;
 						if (_edit.snap || spatial_editor->is_snap_enabled()) {
 
 							snap = spatial_editor->get_scale_snap() / 100;
+
+							Vector3 motion_snapped = motion;
+							motion_snapped.snap(Vector3(snap, snap, snap));
+							set_message(TTR("Scaling: ") + motion_snapped);
+
+						} else {
+							set_message(TTR("Scaling: ") + motion);
 						}
 
 						for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
@@ -1339,6 +1343,15 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 								local_scale = original_local.basis.get_scale() * (local_motion + Vector3(1, 1, 1));
 
+								// Prevent scaling to 0 it would break the gizmo
+								Basis check = original_local.basis;
+								check.scale(local_scale);
+								if (check.determinant() != 0) {
+
+									// Apply scale
+									sp->set_scale(local_scale);
+								}
+
 							} else {
 
 								if (_edit.snap || spatial_editor->is_snap_enabled()) {
@@ -1348,12 +1361,8 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								Transform r;
 								r.basis.scale(motion + Vector3(1, 1, 1));
 								t = base * (r * (base.inverse() * original));
-							}
 
-							// Apply scale
-							if (local_coords) {
-								sp->set_scale(local_scale);
-							} else {
+								// Apply scale
 								sp->set_global_transform(t);
 							}
 						}
@@ -1366,7 +1375,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 						Vector3 motion_mask;
 						Plane plane;
-						bool plane_mv;
+						bool plane_mv = false;
 
 						switch (_edit.plane) {
 							case TRANSFORM_VIEW:
@@ -1386,17 +1395,14 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								plane = Plane(_edit.center, motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized());
 								break;
 							case TRANSFORM_YZ:
-								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2) + spatial_editor->get_gizmo_transform().basis.get_axis(1);
 								plane = Plane(_edit.center, spatial_editor->get_gizmo_transform().basis.get_axis(0));
 								plane_mv = true;
 								break;
 							case TRANSFORM_XZ:
-								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2) + spatial_editor->get_gizmo_transform().basis.get_axis(0);
 								plane = Plane(_edit.center, spatial_editor->get_gizmo_transform().basis.get_axis(1));
 								plane_mv = true;
 								break;
 							case TRANSFORM_XY:
-								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(0) + spatial_editor->get_gizmo_transform().basis.get_axis(1);
 								plane = Plane(_edit.center, spatial_editor->get_gizmo_transform().basis.get_axis(2));
 								plane_mv = true;
 								break;
@@ -1410,55 +1416,27 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						if (!plane.intersects_ray(_edit.click_ray_pos, _edit.click_ray, &click))
 							break;
 
-						//_validate_selection();
 						Vector3 motion = intersection - click;
 						if (motion_mask != Vector3()) {
-							if (plane_mv)
-								motion *= motion_mask;
-							else
+							if (!plane_mv) {
 								motion = motion_mask.dot(motion) * motion_mask;
+							}
 						}
-
-						//set_message("Translating: "+motion);
 
 						List<Node *> &selection = editor_selection->get_selected_node_list();
 
-						float snap = 0;
+						bool local_coords = (spatial_editor->are_local_coords_enabled() && _edit.plane != TRANSFORM_VIEW); // Disable local transformation for TRANSFORM_VIEW
 
+						float snap = 0;
 						if (_edit.snap || spatial_editor->is_snap_enabled()) {
 
 							snap = spatial_editor->get_translate_snap();
-							bool local_coords = spatial_editor->are_local_coords_enabled();
 
-							if (local_coords) {
-								bool multiple = false;
-								Spatial *node = NULL;
-								for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-
-									Spatial *sp = Object::cast_to<Spatial>(E->get());
-									if (!sp) {
-										continue;
-									}
-									if (node) {
-										multiple = true;
-										break;
-									} else {
-										node = sp;
-									}
-								}
-
-								if (multiple) {
-									motion.snap(Vector3(snap, snap, snap));
-								} else {
-									Basis b = node->get_global_transform().basis.orthonormalized();
-									Vector3 local_motion = b.inverse().xform(motion);
-									local_motion.snap(Vector3(snap, snap, snap));
-									motion = b.xform(local_motion);
-								}
-
-							} else {
-								motion.snap(Vector3(snap, snap, snap));
-							}
+							Vector3 motion_snapped = motion;
+							motion_snapped.snap(Vector3(snap, snap, snap));
+							set_message(TTR("Translating: ") + motion_snapped);
+						} else {
+							set_message(TTR("Translating: ") + motion);
 						}
 
 						for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
@@ -1473,10 +1451,34 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								continue;
 							}
 
-							Transform t = se->original;
+							Transform original = se->original;
+							Transform t;
+
+							if (local_coords) {
+
+								if (_edit.snap || spatial_editor->is_snap_enabled()) {
+									Basis g = original.basis.orthonormalized();
+									Vector3 local_motion = g.inverse().xform(motion);
+									local_motion.snap(Vector3(snap, snap, snap));
+
+									motion = g.xform(local_motion);
+								}
+
+							} else {
+
+								if (_edit.snap || spatial_editor->is_snap_enabled()) {
+									motion.snap(Vector3(snap, snap, snap));
+								}
+							}
+
+							// Apply translation
+							t = original;
 							t.origin += motion;
 							sp->set_global_transform(t);
 						}
+
+						surface->update();
+
 					} break;
 
 					case TRANSFORM_ROTATE: {
@@ -1533,7 +1535,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 						List<Node *> &selection = editor_selection->get_selected_node_list();
 
-						bool local_coords = spatial_editor->are_local_coords_enabled();
+						bool local_coords = (spatial_editor->are_local_coords_enabled() && _edit.plane != TRANSFORM_VIEW); // Disable local transformation for TRANSFORM_VIEW
 
 						for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
@@ -1552,10 +1554,12 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								Transform original_local = se->original_local;
 								Basis rot = Basis(axis, angle);
 
-								t.basis = original_local.get_basis() * rot;
+								t.basis = original_local.get_basis().orthonormalized() * rot;
 								t.origin = original_local.origin;
 
+								// Apply rotation
 								sp->set_transform(t);
+								sp->set_scale(original_local.basis.get_scale()); // re-apply original scale
 
 							} else {
 
@@ -1566,6 +1570,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								r.basis.rotate(plane.normal, angle);
 								t = base * r * base.inverse() * original;
 
+								// Apply rotation
 								sp->set_global_transform(t);
 							}
 						}
@@ -1803,6 +1808,11 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			if (!k->is_pressed()) emit_signal("toggle_maximize_view", this);
 		}
 	}
+
+	// freelook uses most of the useful shortcuts, like save, so its ok
+	// to consider freelook active as end of the line for future events.
+	if (freelook_active)
+		accept_event();
 }
 
 void SpatialEditorViewport::set_freelook_active(bool active_now) {
@@ -2001,7 +2011,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 			if (se->aabb.has_no_surface()) {
 
-				se->aabb = vi ? vi->get_aabb() : Rect3(Vector3(-0.2, -0.2, -0.2), Vector3(0.4, 0.4, 0.4));
+				se->aabb = vi ? vi->get_aabb() : AABB(Vector3(-0.2, -0.2, -0.2), Vector3(0.4, 0.4, 0.4));
 			}
 
 			Transform t = sp->get_global_transform();
@@ -2746,7 +2756,7 @@ void SpatialEditorViewport::focus_selection() {
 	cursor.pos = center;
 }
 
-void SpatialEditorViewport::assign_pending_data_pointers(Spatial *p_preview_node, Rect3 *p_preview_bounds, AcceptDialog *p_accept) {
+void SpatialEditorViewport::assign_pending_data_pointers(Spatial *p_preview_node, AABB *p_preview_bounds, AcceptDialog *p_accept) {
 	preview_node = p_preview_node;
 	preview_bounds = p_preview_bounds;
 	accept = p_accept;
@@ -2809,14 +2819,14 @@ Vector3 SpatialEditorViewport::_get_instance_position(const Point2 &p_pos) const
 	return point + offset;
 }
 
-Rect3 SpatialEditorViewport::_calculate_spatial_bounds(const Spatial *p_parent, const Rect3 p_bounds) {
-	Rect3 bounds = p_bounds;
+AABB SpatialEditorViewport::_calculate_spatial_bounds(const Spatial *p_parent, const AABB p_bounds) {
+	AABB bounds = p_bounds;
 	for (int i = 0; i < p_parent->get_child_count(); i++) {
 		Spatial *child = Object::cast_to<Spatial>(p_parent->get_child(i));
 		if (child) {
 			MeshInstance *mesh_instance = Object::cast_to<MeshInstance>(child);
 			if (mesh_instance) {
-				Rect3 mesh_instance_bounds = mesh_instance->get_aabb();
+				AABB mesh_instance_bounds = mesh_instance->get_aabb();
 				mesh_instance_bounds.position += mesh_instance->get_global_transform().origin - p_parent->get_global_transform().origin;
 				bounds.merge_with(mesh_instance_bounds);
 			}
@@ -2848,7 +2858,7 @@ void SpatialEditorViewport::_create_preview(const Vector<String> &files) const {
 			editor->get_scene_root()->add_child(preview_node);
 		}
 	}
-	*preview_bounds = _calculate_spatial_bounds(preview_node, Rect3());
+	*preview_bounds = _calculate_spatial_bounds(preview_node, AABB());
 }
 
 void SpatialEditorViewport::_remove_preview() {
@@ -2911,7 +2921,9 @@ bool SpatialEditorViewport::_create_instance(Node *parent, String &path, const P
 		}
 	}
 
-	instanced_scene->set_filename(ProjectSettings::get_singleton()->localize_path(path));
+	if (scene != NULL) {
+		instanced_scene->set_filename(ProjectSettings::get_singleton()->localize_path(path));
+	}
 
 	editor_data->get_undo_redo().add_do_method(parent, "add_child", instanced_scene);
 	editor_data->get_undo_redo().add_do_method(instanced_scene, "set_owner", editor->get_edited_scene());
@@ -3522,7 +3534,7 @@ void SpatialEditor::select_gizmo_highlight_axis(int p_axis) {
 void SpatialEditor::update_transform_gizmo() {
 
 	List<Node *> &selection = editor_selection->get_selected_node_list();
-	Rect3 center;
+	AABB center;
 	bool first = true;
 
 	Basis gizmo_basis;
@@ -3583,7 +3595,7 @@ Object *SpatialEditor::_get_editor_data(Object *p_what) {
 
 void SpatialEditor::_generate_selection_box() {
 
-	Rect3 aabb(Vector3(), Vector3(1, 1, 1));
+	AABB aabb(Vector3(), Vector3(1, 1, 1));
 	aabb.grow_by(aabb.get_longest_axis_size() / 20.0);
 
 	Ref<SurfaceTool> st = memnew(SurfaceTool);
@@ -4610,7 +4622,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 	// Drag and drop support;
 	preview_node = memnew(Spatial);
-	preview_bounds = Rect3();
+	preview_bounds = AABB();
 
 	ED_SHORTCUT("spatial_editor/bottom_view", TTR("Bottom View"), KEY_MASK_ALT + KEY_KP_7);
 	ED_SHORTCUT("spatial_editor/top_view", TTR("Top View"), KEY_KP_7);

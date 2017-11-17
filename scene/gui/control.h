@@ -191,6 +191,8 @@ private:
 		ObjectID modal_prev_focus_owner;
 
 		NodePath focus_neighbour[4];
+		NodePath focus_next;
+		NodePath focus_prev;
 
 		HashMap<StringName, Ref<Texture>, StringNameHasher> icon_override;
 		HashMap<StringName, Ref<Shader>, StringNameHasher> shader_override;
@@ -225,10 +227,6 @@ private:
 
 	void _size_changed();
 	String _get_tooltip() const;
-
-	// Deprecated, should be removed in a future version.
-	void _set_rotation_deg(float p_degrees);
-	float _get_rotation_deg() const;
 
 	void _ref_font(Ref<Font> p_sc);
 	void _unref_font(Ref<Font> p_sc);
@@ -332,9 +330,9 @@ public:
 	Rect2 get_window_rect() const; ///< use with care, as it blocks waiting for the visual server
 
 	void set_rotation(float p_radians);
-	void set_rotation_deg(float p_degrees);
+	void set_rotation_degrees(float p_degrees);
 	float get_rotation() const;
-	float get_rotation_deg() const;
+	float get_rotation_degrees() const;
 
 	void set_h_grow_direction(GrowDirection p_direction);
 	GrowDirection get_h_grow_direction() const;
@@ -377,6 +375,11 @@ public:
 
 	void set_focus_neighbour(Margin p_margin, const NodePath &p_neighbour);
 	NodePath get_focus_neighbour(Margin p_margin) const;
+
+	void set_focus_next(const NodePath &p_next);
+	NodePath get_focus_next() const;
+	void set_focus_previous(const NodePath &p_prev);
+	NodePath get_focus_previous() const;
 
 	Control *get_focus_owner() const;
 
