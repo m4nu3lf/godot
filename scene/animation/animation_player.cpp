@@ -202,7 +202,6 @@ void AnimationPlayer::_notification(int p_what) {
 
 			if (!Engine::get_singleton()->is_editor_hint() && animation_set.has(autoplay)) {
 				play(autoplay);
-				set_autoplay(""); //this line is the fix for autoplay issues with animatio
 				_animation_process(0);
 			}
 		} break;
@@ -405,6 +404,10 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 				if (a->value_track_get_update_mode(i) == Animation::UPDATE_CONTINUOUS || (p_delta == 0 && a->value_track_get_update_mode(i) == Animation::UPDATE_DISCRETE)) { //delta == 0 means seek
 
 					Variant value = a->value_track_interpolate(i, p_time);
+
+					if (value == Variant())
+						continue;
+
 					//thanks to trigger mode, this should be solved now..
 					/*
 					if (p_delta==0 && value.get_type()==Variant::STRING)
@@ -529,12 +532,12 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, float p_delta, f
 
 		if (&cd == &playback.current) {
 
-			if (!backwards && cd.pos < len && next_pos == len /*&& playback.blend.empty()*/) {
+			if (!backwards && cd.pos <= len && next_pos == len /*&& playback.blend.empty()*/) {
 				//playback finished
 				end_notify = true;
 			}
 
-			if (backwards && cd.pos > 0 && next_pos == 0 /*&& playback.blend.empty()*/) {
+			if (backwards && cd.pos >= 0 && next_pos == 0 /*&& playback.blend.empty()*/) {
 				//playback finished
 				end_notify = true;
 			}
@@ -1254,7 +1257,7 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("advance", "delta"), &AnimationPlayer::advance);
 
 	ADD_GROUP("Playback Options", "playback_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), "set_animation_process_mode", "get_animation_process_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_animation_process_mode", "get_animation_process_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "playback_default_blend_time", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_default_blend_time", "get_default_blend_time");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_node"), "set_root", "get_root");
 

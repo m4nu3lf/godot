@@ -47,6 +47,8 @@
 #include "scene/main/scene_tree.h"
 #include "servers/arvr_server.h"
 #include "servers/audio_server.h"
+#include "servers/physics_2d_server.h"
+#include "servers/physics_server.h"
 
 #include "io/resource_loader.h"
 #include "script_language.h"
@@ -84,6 +86,8 @@ static bool _start_success = false;
 static ScriptDebugger *script_debugger = NULL;
 AudioServer *audio_server = NULL;
 ARVRServer *arvr_server = NULL;
+PhysicsServer *physics_server = NULL;
+Physics2DServer *physics_2d_server = NULL;
 
 static MessageQueue *message_queue = NULL;
 static Performance *performance = NULL;
@@ -119,6 +123,35 @@ static bool disable_render_loop = false;
 static int fixed_fps = -1;
 
 static OS::ProcessID allow_focus_steal_pid = 0;
+
+void initialize_physics() {
+
+	/// 3D Physics Server
+	physics_server = PhysicsServerManager::new_server(ProjectSettings::get_singleton()->get(PhysicsServerManager::setting_property_name));
+	if (!physics_server) {
+		// Physics server not found, Use the default physics
+		physics_server = PhysicsServerManager::new_default_server();
+	}
+	ERR_FAIL_COND(!physics_server);
+	physics_server->init();
+
+	/// 2D Physics server
+	physics_2d_server = Physics2DServerManager::new_server(ProjectSettings::get_singleton()->get(Physics2DServerManager::setting_property_name));
+	if (!physics_2d_server) {
+		// Physics server not found, Use the default physics
+		physics_2d_server = Physics2DServerManager::new_default_server();
+	}
+	ERR_FAIL_COND(!physics_2d_server);
+	physics_2d_server->init();
+}
+
+void finalize_physics() {
+	physics_server->finish();
+	memdelete(physics_server);
+
+	physics_2d_server->finish();
+	memdelete(physics_2d_server);
+}
 
 static String unescape_cmdline(const String &p_str) {
 
@@ -1070,9 +1103,13 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		OS::get_singleton()->enable_for_stealing_focus(allow_focus_steal_pid);
 	}
 
-	MAIN_PRINT("Main: Load Scripts, Modules, Drivers");
+	MAIN_PRINT("Main: Load Modules, Physics, Drivers, Scripts");
 
 	register_module_types();
+
+	initialize_physics();
+	register_server_singletons();
+
 	register_driver_types();
 
 	ScriptServer::init_languages();
@@ -1348,7 +1385,7 @@ bool Main::start() {
 			String stretch_mode = GLOBAL_DEF("display/window/stretch/mode", "disabled");
 			String stretch_aspect = GLOBAL_DEF("display/window/stretch/aspect", "ignore");
 			Size2i stretch_size = Size2(GLOBAL_DEF("display/window/size/width", 0), GLOBAL_DEF("display/window/size/height", 0));
-			int stretch_shrink = GLOBAL_DEF("display/window/stretch/shrink", 1);
+			real_t stretch_shrink = GLOBAL_DEF("display/window/stretch/shrink", 1.0f);
 
 			SceneTree::StretchMode sml_sm = SceneTree::STRETCH_MODE_DISABLED;
 			if (stretch_mode == "2d")
@@ -1631,7 +1668,7 @@ bool Main::iteration() {
 
 	while (time_accum > frame_slice) {
 
-		uint64_t fixed_begin = OS::get_singleton()->get_ticks_usec();
+		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 
 		PhysicsServer::get_singleton()->sync();
 		PhysicsServer::get_singleton()->flush_queries();
@@ -1654,8 +1691,8 @@ bool Main::iteration() {
 		time_accum -= frame_slice;
 		message_queue->flush();
 
-		physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() - fixed_begin); // keep the largest one for reference
-		physics_process_max = MAX(OS::get_singleton()->get_ticks_usec() - fixed_begin, physics_process_max);
+		physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() - physics_begin); // keep the largest one for reference
+		physics_process_max = MAX(OS::get_singleton()->get_ticks_usec() - physics_begin, physics_process_max);
 		iters++;
 		Engine::get_singleton()->_physics_frames++;
 	}
@@ -1789,6 +1826,7 @@ void Main::cleanup() {
 	unregister_server_types();
 
 	OS::get_singleton()->finalize();
+	finalize_physics();
 
 	if (packed_data)
 		memdelete(packed_data);
