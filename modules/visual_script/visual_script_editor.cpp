@@ -1389,7 +1389,7 @@ bool VisualScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 			if (String(d["type"]) == "obj_property") {
 
 #ifdef OSX_ENABLED
-				const_cast<VisualScriptEditor *>(this)->_show_hint(TTR("Hold Meta to drop a Getter. Hold Shift to drop a generic signature."));
+				const_cast<VisualScriptEditor *>(this)->_show_hint(vformat(TTR("Hold %s to drop a Getter. Hold Shift to drop a generic signature."), find_keycode_name(KEY_META)));
 #else
 				const_cast<VisualScriptEditor *>(this)->_show_hint(TTR("Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."));
 #endif
@@ -1398,7 +1398,7 @@ bool VisualScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 			if (String(d["type"]) == "nodes") {
 
 #ifdef OSX_ENABLED
-				const_cast<VisualScriptEditor *>(this)->_show_hint(TTR("Hold Meta to drop a simple reference to the node."));
+				const_cast<VisualScriptEditor *>(this)->_show_hint(vformat(TTR("Hold %s to drop a simple reference to the node."), find_keycode_name(KEY_META)));
 #else
 				const_cast<VisualScriptEditor *>(this)->_show_hint(TTR("Hold Ctrl to drop a simple reference to the node."));
 #endif
@@ -1407,7 +1407,7 @@ bool VisualScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 			if (String(d["type"]) == "visual_script_variable_drag") {
 
 #ifdef OSX_ENABLED
-				const_cast<VisualScriptEditor *>(this)->_show_hint(TTR("Hold Meta to drop a Variable Setter."));
+				const_cast<VisualScriptEditor *>(this)->_show_hint(vformat(TTR("Hold %s to drop a Variable Setter."), find_keycode_name(KEY_META)));
 #else
 				const_cast<VisualScriptEditor *>(this)->_show_hint(TTR("Hold Ctrl to drop a Variable Setter."));
 #endif
@@ -2466,7 +2466,7 @@ VisualScriptNode::TypeGuess VisualScriptEditor::_guess_output_type(int p_port_ac
 		in_guesses.push_back(g);
 	}
 
-	return node->guess_output_type(in_guesses.ptr(), p_port_action_output);
+	return node->guess_output_type(in_guesses.ptrw(), p_port_action_output);
 }
 
 void VisualScriptEditor::_port_action_menu(int p_option) {

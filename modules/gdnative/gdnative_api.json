@@ -2680,6 +2680,26 @@
         ]
       },
       {
+        "name": "godot_array_bsearch",
+        "return_type": "godot_int",
+        "arguments": [
+          ["godot_array *", "p_self"],
+          ["const godot_variant *", "p_value"],
+          ["const godot_bool", "p_before"]
+        ]
+      },
+      {
+        "name": "godot_array_bsearch_custom",
+        "return_type": "godot_int",
+        "arguments": [
+          ["godot_array *", "p_self"],
+          ["const godot_variant *", "p_value"],
+          ["godot_object *", "p_obj"],
+          ["const godot_string *", "p_func"],
+          ["const godot_bool", "p_before"]
+        ]
+      },
+      {
         "name": "godot_array_destroy",
         "return_type": "void",
         "arguments": [
@@ -2898,7 +2918,7 @@
         ]
       },
       {
-        "name": "godot_node_path_get_property",
+        "name": "godot_node_path_get_concatenated_subnames",
         "return_type": "godot_string",
         "arguments": [
           ["const godot_node_path *", "p_self"]
@@ -4362,13 +4382,6 @@
         ]
       },
       {
-        "name": "godot_string_c_str",
-        "return_type": "const char *",
-        "arguments": [
-          ["const godot_string *", "p_self"]
-        ]
-      },
-      {
         "name": "godot_string_unicode_str",
         "return_type": "const wchar_t *",
         "arguments": [
@@ -5553,6 +5566,14 @@
         "return_type": "godot_class_constructor",
         "arguments": [
           ["const char *", "p_classname"]
+        ]
+      },
+      {
+        "name": "godot_register_native_call_type",
+        "return_type": "void",
+        "arguments": [
+          ["const char *", "call_type"],
+          ["native_call_cb", "p_callback"]
         ]
       },
       {

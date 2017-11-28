@@ -615,6 +615,23 @@ ScriptLanguage *GDScript::get_language() const {
 	return GDScriptLanguage::get_singleton();
 }
 
+void GDScript::get_constants(Map<StringName, Variant> *p_constants) {
+
+	if (p_constants) {
+		for (Map<StringName, Variant>::Element *E = constants.front(); E; E = E->next()) {
+			(*p_constants)[E->key()] = E->value();
+		}
+	}
+}
+
+void GDScript::get_members(Set<StringName> *p_members) {
+	if (p_members) {
+		for (Set<StringName>::Element *E = members.front(); E; E = E->next()) {
+			p_members->insert(E->get());
+		}
+	}
+}
+
 Variant GDScript::call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 
 	GDScript *top = this;
@@ -721,7 +738,7 @@ Error GDScript::load_byte_code(const String &p_path) {
 		Error err = fae->open_and_parse(fa, key, FileAccessEncrypted::MODE_READ);
 		ERR_FAIL_COND_V(err, err);
 		bytecode.resize(fae->get_len());
-		fae->get_buffer(bytecode.ptr(), bytecode.size());
+		fae->get_buffer(bytecode.ptrw(), bytecode.size());
 		memdelete(fae);
 	} else {
 
@@ -1307,7 +1324,7 @@ void GDScriptLanguage::_add_global(const StringName &p_name, const Variant &p_va
 	}
 	globals[p_name] = global_array.size();
 	global_array.push_back(p_value);
-	_global_array = global_array.ptr();
+	_global_array = global_array.ptrw();
 }
 
 void GDScriptLanguage::add_global_constant(const StringName &p_variable, const Variant &p_value) {

@@ -64,7 +64,6 @@ void GDNativeLibrary::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_current_library_path"), &GDNativeLibrary::get_current_library_path);
 	ClassDB::bind_method(D_METHOD("get_current_dependencies"), &GDNativeLibrary::get_current_dependencies);
-	ClassDB::bind_method(D_METHOD("is_current_library_statically_linked"), &GDNativeLibrary::is_current_library_statically_linked);
 
 	ClassDB::bind_method(D_METHOD("should_load_once"), &GDNativeLibrary::should_load_once);
 	ClassDB::bind_method(D_METHOD("is_singleton"), &GDNativeLibrary::is_singleton);
@@ -109,6 +108,9 @@ Ref<GDNativeLibrary> GDNative::get_library() {
 	return library;
 }
 
+extern "C" void _gdnative_report_version_mismatch(const godot_object *p_library, const char *p_ext, godot_gdnative_api_version p_want, godot_gdnative_api_version p_have);
+extern "C" void _gdnative_report_loading_error(const godot_object *p_library, const char *p_what);
+
 bool GDNative::initialize() {
 	if (library.is_null()) {
 		ERR_PRINT("No library set, can't initialize GDNative object");
@@ -116,12 +118,18 @@ bool GDNative::initialize() {
 	}
 
 	String lib_path = library->get_current_library_path();
-	if (lib_path.empty() && !library->is_current_library_statically_linked()) {
+	if (lib_path.empty()) {
 		ERR_PRINT("No library set for this platform");
 		return false;
 	}
 #ifdef IPHONE_ENABLED
-	String path = lib_path.replace("res://", "dylibs/");
+	// on iOS we use static linking
+	String path = "";
+#elif defined(ANDROID_ENABLED)
+	// On Android dynamic libraries are located separately from resource assets,
+	// we should pass library name to dlopen(). The library name is flattened
+	// during export.
+	String path = lib_path.get_file();
 #else
 	String path = ProjectSettings::get_singleton()->globalize_path(lib_path);
 #endif
@@ -137,7 +145,7 @@ bool GDNative::initialize() {
 	}
 
 	Error err = OS::get_singleton()->open_dynamic_library(path, native_handle);
-	if (err != OK && !library->is_current_library_statically_linked()) {
+	if (err != OK) {
 		return false;
 	}
 
@@ -146,13 +154,12 @@ bool GDNative::initialize() {
 	// we cheat here a little bit. you saw nothing
 	initialized = true;
 
-	err = get_symbol(library->get_symbol_prefix() + init_symbol, library_init);
+	err = get_symbol(library->get_symbol_prefix() + init_symbol, library_init, false);
 
 	initialized = false;
 
 	if (err || !library_init) {
-		if (!library->is_current_library_statically_linked())
-			OS::get_singleton()->close_dynamic_library(native_handle);
+		OS::get_singleton()->close_dynamic_library(native_handle);
 		native_handle = NULL;
 		ERR_PRINT("Failed to obtain godot_gdnative_init symbol");
 		return false;
@@ -168,6 +175,8 @@ bool GDNative::initialize() {
 	options.core_api_hash = ClassDB::get_api_hash(ClassDB::API_CORE);
 	options.editor_api_hash = ClassDB::get_api_hash(ClassDB::API_EDITOR);
 	options.no_api_hash = ClassDB::get_api_hash(ClassDB::API_NONE);
+	options.report_version_mismatch = &_gdnative_report_version_mismatch;
+	options.report_loading_error = &_gdnative_report_loading_error;
 	options.gd_native_library = (godot_object *)(get_library().ptr());
 	options.active_library_path = (godot_string *)&path;
 
@@ -277,7 +286,7 @@ Variant GDNative::call_native(StringName p_native_call_type, StringName p_proced
 	return *(Variant *)&result;
 }
 
-Error GDNative::get_symbol(StringName p_procedure_name, void *&r_handle) {
+Error GDNative::get_symbol(StringName p_procedure_name, void *&r_handle, bool p_optional) {
 
 	if (!initialized) {
 		ERR_PRINT("No valid library handle, can't get symbol from GDNative object");
@@ -288,7 +297,7 @@ Error GDNative::get_symbol(StringName p_procedure_name, void *&r_handle) {
 			native_handle,
 			p_procedure_name,
 			r_handle,
-			true);
+			p_optional);
 
 	return result;
 }
@@ -369,40 +378,8 @@ RES GDNativeLibraryResourceLoader::load(const String &p_path, const String &p_or
 		}
 	}
 
-	bool is_statically_linked = false;
-	{
-
-		List<String> static_linking_keys;
-		config->get_section_keys("static_linking", &static_linking_keys);
-
-		for (List<String>::Element *E = static_linking_keys.front(); E; E = E->next()) {
-			String key = E->get();
-
-			Vector<String> tags = key.split(".");
-
-			bool skip = false;
-
-			for (int i = 0; i < tags.size(); i++) {
-				bool has_feature = OS::get_singleton()->has_feature(tags[i]);
-
-				if (!has_feature) {
-					skip = true;
-					break;
-				}
-			}
-
-			if (skip) {
-				continue;
-			}
-
-			is_statically_linked = config->get_value("static_linking", key);
-			break;
-		}
-	}
-
 	lib->current_library_path = entry_lib_path;
 	lib->current_dependencies = dependency_paths;
-	lib->current_library_statically_linked = is_statically_linked;
 
 	return lib;
 }

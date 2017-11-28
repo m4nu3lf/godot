@@ -116,7 +116,7 @@ String ProjectSettings::globalize_path(const String &p_path) const {
 		return p_path.replace("res://", "");
 	} else if (p_path.begins_with("user://")) {
 
-		String data_dir = OS::get_singleton()->get_data_dir();
+		String data_dir = OS::get_singleton()->get_user_data_dir();
 		if (data_dir != "") {
 
 			return p_path.replace("user:/", data_dir);
@@ -429,7 +429,7 @@ Error ProjectSettings::_load_settings_binary(const String p_path) {
 		uint32_t vlen = f->get_32();
 		Vector<uint8_t> d;
 		d.resize(vlen);
-		f->get_buffer(d.ptr(), vlen);
+		f->get_buffer(d.ptrw(), vlen);
 		Variant value;
 		Error err = decode_variant(value, d.ptr(), d.size());
 		ERR_EXPLAIN("Error decoding property: " + key);
@@ -891,7 +891,8 @@ ProjectSettings::ProjectSettings() {
 	custom_prop_info["application/run/main_scene"] = PropertyInfo(Variant::STRING, "application/run/main_scene", PROPERTY_HINT_FILE, "tscn,scn,res");
 	GLOBAL_DEF("application/run/disable_stdout", false);
 	GLOBAL_DEF("application/run/disable_stderr", false);
-	GLOBAL_DEF("application/config/use_shared_user_dir", true);
+	GLOBAL_DEF("application/config/use_custom_user_dir", false);
+	GLOBAL_DEF("application/config/custom_user_dir_name", "");
 
 	key.instance();
 	key->set_scancode(KEY_ENTER);

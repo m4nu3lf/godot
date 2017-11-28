@@ -84,7 +84,7 @@ void VideoPlayer::_mix_audio() {
 		return;
 	}
 
-	AudioFrame *buffer = mix_buffer.ptr();
+	AudioFrame *buffer = mix_buffer.ptrw();
 	int buffer_size = mix_buffer.size();
 
 	// Resample
@@ -490,6 +490,7 @@ VideoPlayer::VideoPlayer() {
 	expand = true;
 
 	audio_track = 0;
+	bus_index = 0;
 
 	buffering_ms = 500;
 	server_mix_rate = 44100;

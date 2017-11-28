@@ -3477,7 +3477,7 @@ void RasterizerStorageGLES3::mesh_clear(RID p_mesh) {
 	}
 }
 
-void RasterizerStorageGLES3::mesh_render_blend_shapes(Surface *s, float *p_weights) {
+void RasterizerStorageGLES3::mesh_render_blend_shapes(Surface *s, const float *p_weights) {
 
 	glBindVertexArray(s->array_id);
 
@@ -4063,7 +4063,7 @@ void RasterizerStorageGLES3::update_dirty_multimeshes() {
 
 			int stride = multimesh->color_floats + multimesh->xform_floats;
 			int count = multimesh->data.size();
-			float *data = multimesh->data.ptr();
+			float *data = multimesh->data.ptrw();
 
 			AABB aabb;
 
@@ -4327,7 +4327,7 @@ void RasterizerStorageGLES3::skeleton_bone_set_transform(RID p_skeleton, int p_b
 	ERR_FAIL_INDEX(p_bone, skeleton->size);
 	ERR_FAIL_COND(skeleton->use_2d);
 
-	float *texture = skeleton->skel_texture.ptr();
+	float *texture = skeleton->skel_texture.ptrw();
 
 	int base_ofs = ((p_bone / 256) * 256) * 3 * 4 + (p_bone % 256) * 4;
 
@@ -4390,7 +4390,7 @@ void RasterizerStorageGLES3::skeleton_bone_set_transform_2d(RID p_skeleton, int 
 	ERR_FAIL_INDEX(p_bone, skeleton->size);
 	ERR_FAIL_COND(!skeleton->use_2d);
 
-	float *texture = skeleton->skel_texture.ptr();
+	float *texture = skeleton->skel_texture.ptrw();
 
 	int base_ofs = ((p_bone / 256) * 256) * 2 * 4 + (p_bone % 256) * 4;
 
@@ -4466,6 +4466,7 @@ RID RasterizerStorageGLES3::light_create(VS::LightType p_type) {
 	light->type = p_type;
 
 	light->param[VS::LIGHT_PARAM_ENERGY] = 1.0;
+	light->param[VS::LIGHT_PARAM_INDIRECT_ENERGY] = 1.0;
 	light->param[VS::LIGHT_PARAM_SPECULAR] = 0.5;
 	light->param[VS::LIGHT_PARAM_RANGE] = 1.0;
 	light->param[VS::LIGHT_PARAM_SPOT_ANGLE] = 45;
@@ -5631,8 +5632,8 @@ void RasterizerStorageGLES3::update_particles() {
 			}
 
 			int tc = material->textures.size();
-			RID *textures = material->textures.ptr();
-			ShaderLanguage::ShaderNode::Uniform::Hint *texture_hints = material->shader->texture_hints.ptr();
+			RID *textures = material->textures.ptrw();
+			ShaderLanguage::ShaderNode::Uniform::Hint *texture_hints = material->shader->texture_hints.ptrw();
 
 			for (int i = 0; i < tc; i++) {
 
@@ -5693,13 +5694,9 @@ void RasterizerStorageGLES3::update_particles() {
 			else
 				frame_time = 1.0 / 30.0;
 
-			float delta = particles->pre_process_time;
-			if (delta > 0.1) { //avoid recursive stalls if fps goes below 10
-				delta = 0.1;
-			}
-			float todo = delta;
+			float todo = particles->pre_process_time;
 
-			while (todo >= frame_time) {
+			while (todo >= 0) {
 				_particles_process(particles, frame_time);
 				todo -= frame_time;
 			}

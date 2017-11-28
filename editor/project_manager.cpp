@@ -233,7 +233,7 @@ private:
 
 			fdialog->set_mode(FileDialog::MODE_OPEN_FILE);
 			fdialog->clear_filters();
-			fdialog->add_filter("project.godot ; " _MKSTR(VERSION_NAME) " Project");
+			fdialog->add_filter("project.godot ; " VERSION_NAME " Project");
 		} else {
 			fdialog->set_mode(FileDialog::MODE_OPEN_DIR);
 		}
@@ -383,7 +383,7 @@ private:
 
 							//read
 							unzOpenCurrentFile(pkg);
-							unzReadCurrentFile(pkg, data.ptr(), data.size());
+							unzReadCurrentFile(pkg, data.ptrw(), data.size());
 							unzCloseCurrentFile(pkg);
 
 							FileAccess *f = FileAccess::open(dir.plus_file(path), FileAccess::WRITE);
@@ -654,6 +654,12 @@ void ProjectManager::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
 		Engine::get_singleton()->set_editor_hint(false);
+
+	} else if (p_what == NOTIFICATION_READY) {
+
+		if (scroll_childs->get_child_count() == 0) {
+			open_templates->popup_centered_minsize();
+		}
 
 	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 
@@ -1432,7 +1438,13 @@ void ProjectManager::_bind_methods() {
 	ClassDB::bind_method("_favorite_pressed", &ProjectManager::_favorite_pressed);
 	ClassDB::bind_method("_install_project", &ProjectManager::_install_project);
 	ClassDB::bind_method("_files_dropped", &ProjectManager::_files_dropped);
+	ClassDB::bind_method("_open_asset_library", &ProjectManager::_open_asset_library);
 	ClassDB::bind_method(D_METHOD("_scan_multiple_folders", "files"), &ProjectManager::_scan_multiple_folders);
+}
+
+void ProjectManager::_open_asset_library() {
+	asset_library->disable_community_support();
+	tabs->set_current_tab(1);
 }
 
 ProjectManager::ProjectManager() {
@@ -1483,13 +1495,13 @@ ProjectManager::ProjectManager() {
 	String cp;
 	cp.push_back(0xA9);
 	cp.push_back(0);
-	OS::get_singleton()->set_window_title(_MKSTR(VERSION_NAME) + String(" - ") + TTR("Project Manager") + " - " + cp + " 2008-2017 Juan Linietsky, Ariel Manzur & Godot Contributors");
+	OS::get_singleton()->set_window_title(VERSION_NAME + String(" - ") + TTR("Project Manager") + " - " + cp + " 2008-2017 Juan Linietsky, Ariel Manzur & Godot Contributors");
 
 	HBoxContainer *top_hb = memnew(HBoxContainer);
 	vb->add_child(top_hb);
 	CenterContainer *ccl = memnew(CenterContainer);
 	Label *l = memnew(Label);
-	l->set_text(_MKSTR(VERSION_NAME) + String(" - ") + TTR("Project Manager"));
+	l->set_text(VERSION_NAME + String(" - ") + TTR("Project Manager"));
 	ccl->add_child(l);
 	top_hb->add_child(ccl);
 	top_hb->add_spacer();
@@ -1498,11 +1510,8 @@ ProjectManager::ProjectManager() {
 	if (hash.length() != 0)
 		hash = "." + hash.left(7);
 	l->set_text("v" VERSION_MKSTRING "" + hash);
-	//l->add_font_override("font",get_font("bold","Fonts"));
 	l->set_align(Label::ALIGN_CENTER);
 	top_hb->add_child(l);
-	//vb->add_child(memnew(HSeparator));
-	//vb->add_margin_child("\n",memnew(Control));
 
 	Control *center_box = memnew(Control);
 	center_box->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1708,6 +1717,12 @@ ProjectManager::ProjectManager() {
 
 	dialog_error = memnew(AcceptDialog);
 	gui_base->add_child(dialog_error);
+
+	open_templates = memnew(ConfirmationDialog);
+	open_templates->set_text(TTR("You don't currently have any projects.\nWould you like to explore the official example projects in the Asset Library?"));
+	open_templates->get_ok()->set_text(TTR("Open Asset Library"));
+	open_templates->connect("confirmed", this, "_open_asset_library");
+	add_child(open_templates);
 }
 
 ProjectManager::~ProjectManager() {
@@ -1759,6 +1774,7 @@ void ProjectListFilter::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			clear_search_button->set_icon(get_icon("Close", "EditorIcons"));
+
 		} break;
 	}
 }

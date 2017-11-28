@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  main.m                                                               */
+/*  register_platform_apis.h                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,13 +27,10 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#ifndef REGISTER_APIS_H
+#define REGISTER_APIS_H
 
-#import <UIKit/UIKit.h>
+void register_platform_apis();
+void unregister_platform_apis();
 
-#import "AppDelegate.h"
-
-int main(int argc, char *argv[]) {
-	@autoreleasepool {
-		return UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class]));
-	}
-}
+#endif

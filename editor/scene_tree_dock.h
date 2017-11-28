@@ -130,7 +130,6 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _add_children_to_popup(Object *p_obj, int p_depth);
 
-	Node *_duplicate(Node *p_node, Map<Node *, Node *> &duplimap);
 	void _node_reparent(NodePath p_path, bool p_keep_global_xform);
 	void _do_reparent(Node *p_new_parent, int p_position_in_parent, Vector<Node *> p_nodes, bool p_keep_global_xform);
 
@@ -203,6 +202,8 @@ public:
 	void add_remote_tree_editor(Control *p_remote);
 	void show_remote_tree();
 	void hide_remote_tree();
+	void show_tab_buttons();
+	void hide_tab_buttons();
 
 	void open_script_dialog(Node *p_for_node);
 	SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSelection *p_editor_selection, EditorData &p_editor_data);
