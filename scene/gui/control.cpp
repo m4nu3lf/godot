@@ -2470,6 +2470,16 @@ Control::MouseFilter Control::get_mouse_filter() const {
 	return data.mouse_filter;
 }
 
+void Control::set_pass_on_modal_close_click(bool p_pass_on) {
+
+	data.pass_on_modal_close_click = p_pass_on;
+}
+
+bool Control::pass_on_modal_close_click() const {
+
+	return data.pass_on_modal_close_click;
+}
+
 Control *Control::get_focus_owner() const {
 
 	ERR_FAIL_COND_V(!is_inside_tree(), NULL);
@@ -2825,7 +2835,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "rect_rotation", PROPERTY_HINT_RANGE, "-1080,1080,0.01"), "set_rotation_degrees", "get_rotation_degrees");
 	ADD_PROPERTYNO(PropertyInfo(Variant::VECTOR2, "rect_scale"), "set_scale", "get_scale");
 	ADD_PROPERTYNO(PropertyInfo(Variant::VECTOR2, "rect_pivot_offset"), "set_pivot_offset", "get_pivot_offset");
-	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "rect_clip_content"), "set_clip_contents", "is_clipping_contents");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "rect_clip_content"), "set_clip_contents", "is_clipping_contents");
 
 	ADD_GROUP("Hint", "hint_");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "hint_tooltip", PROPERTY_HINT_MULTILINE_TEXT), "set_tooltip", "_get_tooltip");
@@ -2934,6 +2944,7 @@ Control::Control() {
 	data.parent = NULL;
 
 	data.mouse_filter = MOUSE_FILTER_STOP;
+	data.pass_on_modal_close_click = true;
 
 	data.SI = NULL;
 	data.MI = NULL;

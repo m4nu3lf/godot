@@ -208,6 +208,8 @@ RasterizerStorageGLES3::Texture *RasterizerCanvasGLES3::_bind_canvas_texture(con
 
 		} else {
 
+			texture = texture->get_ptr();
+
 			if (texture->render_target)
 				texture->render_target->used_in_frame = true;
 
@@ -243,6 +245,7 @@ RasterizerStorageGLES3::Texture *RasterizerCanvasGLES3::_bind_canvas_texture(con
 
 		} else {
 
+			normal_map = normal_map->get_ptr();
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, normal_map->tex_id);
 			state.current_normal = p_normal_map;
@@ -524,7 +527,9 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 					_draw_generic(GL_TRIANGLE_STRIP, pline->triangles.size(), pline->triangles.ptr(), NULL, pline->triangle_colors.ptr(), pline->triangle_colors.size() == 1);
 #ifdef GLES_OVER_GL
 					glEnable(GL_LINE_SMOOTH);
-					if (pline->lines.size()) {
+					if (pline->multiline) {
+						//needs to be different
+					} else {
 						_draw_generic(GL_LINE_LOOP, pline->lines.size(), pline->lines.ptr(), NULL, pline->line_colors.ptr(), pline->line_colors.size() == 1);
 					}
 					glDisable(GL_LINE_SMOOTH);
@@ -535,7 +540,23 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 					if (pline->antialiased)
 						glEnable(GL_LINE_SMOOTH);
 #endif
-					_draw_generic(GL_LINE_STRIP, pline->lines.size(), pline->lines.ptr(), NULL, pline->line_colors.ptr(), pline->line_colors.size() == 1);
+
+					if (pline->multiline) {
+						int todo = pline->lines.size() / 2;
+						int max_per_call = data.polygon_buffer_size / (sizeof(real_t) * 4);
+						int offset = 0;
+
+						while (todo) {
+							int to_draw = MIN(max_per_call, todo);
+							_draw_generic(GL_LINES, to_draw * 2, &pline->lines.ptr()[offset], NULL, pline->line_colors.size() == 1 ? pline->line_colors.ptr() : &pline->line_colors.ptr()[offset], pline->line_colors.size() == 1);
+							todo -= to_draw;
+							offset += to_draw * 2;
+						}
+
+					} else {
+
+						_draw_generic(GL_LINES, pline->lines.size(), pline->lines.ptr(), NULL, pline->line_colors.ptr(), pline->line_colors.size() == 1);
+					}
 
 #ifdef GLES_OVER_GL
 					if (pline->antialiased)
@@ -1065,19 +1086,22 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 				}
 			}
 
-			if (shader_ptr && shader_ptr != shader_cache) {
+			if (shader_ptr) {
 
 				if (shader_ptr->canvas_item.uses_screen_texture && !state.canvas_texscreen_used) {
 					//copy if not copied before
 					_copy_texscreen(Rect2());
 				}
 
-				if (shader_ptr->canvas_item.uses_time) {
-					VisualServerRaster::redraw_request();
-				}
+				if (shader_ptr != shader_cache) {
 
-				state.canvas_shader.set_custom_shader(shader_ptr->custom_code_id);
-				state.canvas_shader.bind();
+					if (shader_ptr->canvas_item.uses_time) {
+						VisualServerRaster::redraw_request();
+					}
+
+					state.canvas_shader.set_custom_shader(shader_ptr->custom_code_id);
+					state.canvas_shader.bind();
+				}
 
 				if (material_ptr->ubo_id) {
 					glBindBufferBase(GL_UNIFORM_BUFFER, 2, material_ptr->ubo_id);
@@ -1115,6 +1139,8 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 						continue;
 					}
 
+					t = t->get_ptr();
+
 					if (storage->config.srgb_decode_supported && t->using_srgb) {
 						//no srgb in 2D
 						glTexParameteri(t->target, _TEXTURE_SRGB_DECODE_EXT, _SKIP_DECODE_EXT);
@@ -1124,7 +1150,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 					glBindTexture(t->target, t->tex_id);
 				}
 
-			} else if (!shader_ptr) {
+			} else {
 				state.canvas_shader.set_custom_shader(0);
 				state.canvas_shader.bind();
 			}
@@ -1522,7 +1548,7 @@ void RasterizerCanvasGLES3::reset_canvas() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	//use for reading from screen
-	if (storage->frame.current_rt) {
+	if (storage->frame.current_rt && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_NO_SAMPLING]) {
 		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 3);
 		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->effects.mip_maps[0].color);
 	}
@@ -1700,6 +1726,7 @@ void RasterizerCanvasGLES3::initialize() {
 		glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
 		glBufferData(GL_ARRAY_BUFFER, poly_size, NULL, GL_DYNAMIC_DRAW); //allocate max size
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		data.polygon_buffer_size = poly_size;
 
 		//quad arrays
 		for (int i = 0; i < 4; i++) {
@@ -1760,6 +1787,8 @@ void RasterizerCanvasGLES3::initialize() {
 
 	state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_RGBA_SHADOWS, storage->config.use_rgba_2d_shadows);
 	state.canvas_shadow_shader.set_conditional(CanvasShadowShaderGLES3::USE_RGBA_SHADOWS, storage->config.use_rgba_2d_shadows);
+
+	state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_PIXEL_SNAP, GLOBAL_DEF("rendering/quality/2d/use_pixel_snap", false));
 }
 
 void RasterizerCanvasGLES3::finalize() {

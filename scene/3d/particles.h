@@ -57,7 +57,6 @@ public:
 private:
 	RID particles;
 
-	bool emitting;
 	bool one_shot;
 	int amount;
 	float lifetime;
@@ -389,6 +388,8 @@ public:
 	static void flush_changes();
 
 	RID get_shader_rid() const;
+
+	virtual Shader::Mode get_shader_mode() const;
 
 	ParticlesMaterial();
 	~ParticlesMaterial();

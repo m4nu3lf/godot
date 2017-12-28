@@ -37,7 +37,7 @@
 #include "io/zip_io.h"
 #include "os/file_access.h"
 #include "os/os.h"
-#include "platform/osx/logo.gen.h"
+#include "platform/iphone/logo.gen.h"
 #include "project_settings.h"
 #include "string.h"
 #include "version.h"
@@ -69,8 +69,9 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 		String name;
 		bool is_default;
 
-		ExportArchitecture()
-			: name(""), is_default(false) {
+		ExportArchitecture() :
+				name(""),
+				is_default(false) {
 		}
 
 		ExportArchitecture(String p_name, bool p_is_default) {
@@ -107,7 +108,7 @@ public:
 	virtual String get_os_name() const { return "iOS"; }
 	virtual Ref<Texture> get_logo() const { return logo; }
 
-	virtual String get_binary_extension() const { return "ipa"; }
+	virtual String get_binary_extension(const Ref<EditorExportPreset> &p_preset) const { return "ipa"; }
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
@@ -453,8 +454,9 @@ struct CodesignData {
 	const Ref<EditorExportPreset> &preset;
 	bool debug;
 
-	CodesignData(const Ref<EditorExportPreset> &p_preset, bool p_debug)
-		: preset(p_preset), debug(p_debug) {
+	CodesignData(const Ref<EditorExportPreset> &p_preset, bool p_debug) :
+			preset(p_preset),
+			debug(p_debug) {
 	}
 };
 
@@ -972,14 +974,13 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 	if (!err.empty())
 		r_error = err;
 
+	r_missing_templates = !valid;
 	return valid;
 }
 
 EditorExportPlatformIOS::EditorExportPlatformIOS() {
 
-	///@TODO need to create the correct logo
-	//  Ref<Image> img = memnew(Image(_iphone_logo));
-	Ref<Image> img = memnew(Image(_osx_logo));
+	Ref<Image> img = memnew(Image(_iphone_logo));
 	logo.instance();
 	logo->create_from_image(img);
 }

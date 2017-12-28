@@ -129,6 +129,7 @@ void FileSystemDock::_update_tree(bool keep_collapse_state) {
 	}
 
 	_create_tree(root, EditorFileSystem::get_singleton()->get_filesystem(), uncollapsed_paths);
+	tree->ensure_cursor_is_visible();
 	updating_tree = false;
 }
 
@@ -146,7 +147,7 @@ void FileSystemDock::_notification(int p_what) {
 
 				if (low_height_mode) {
 
-					file_list_vb->hide();
+					tree->hide();
 					tree->set_v_size_flags(SIZE_EXPAND_FILL);
 					button_tree->show();
 				} else {
@@ -157,6 +158,7 @@ void FileSystemDock::_notification(int p_what) {
 						button_favorite->show();
 						_update_tree(true);
 					}
+					tree->ensure_cursor_is_visible();
 
 					if (!file_list_vb->is_visible()) {
 						file_list_vb->show();
@@ -344,11 +346,7 @@ void FileSystemDock::navigate_to_path(const String &p_path) {
 		_update_tree(true);
 		_update_files(false);
 	} else {
-		if (file_name.empty()) {
-			_go_to_tree();
-		} else {
-			_go_to_file_list();
-		}
+		_go_to_file_list();
 	}
 
 	if (!file_name.empty()) {
@@ -590,10 +588,7 @@ void FileSystemDock::_select_file(int p_idx) {
 		if (fpath != "res://") {
 			fpath = fpath.substr(0, fpath.length() - 1);
 		}
-		path = fpath;
-		_update_files(false);
-		current_path->set_text(path);
-		_push_to_history();
+		navigate_to_path(fpath);
 	} else {
 		if (ResourceLoader::get_resource_type(fpath) == "PackedScene") {
 			editor->open_request(fpath);
@@ -781,6 +776,20 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 			}
 		}
 
+		// update scene if it is open
+		for (int i = 0; i < changed_paths.size(); ++i) {
+			String new_item_path = p_item.is_file ? new_path : changed_paths[i].replace_first(old_path, new_path);
+			if (ResourceLoader::get_resource_type(new_item_path) == "PackedScene" && editor->is_scene_open(changed_paths[i])) {
+				EditorData *ed = &editor->get_editor_data();
+				for (int j = 0; j < ed->get_edited_scene_count(); j++) {
+					if (ed->get_scene_path(j) == changed_paths[i]) {
+						ed->get_edited_scene_root(j)->set_filename(new_item_path);
+						break;
+					}
+				}
+			}
+		}
+
 		//Only treat as a changed dependency if it was successfully moved
 		for (int i = 0; i < changed_paths.size(); ++i) {
 			p_renames[changed_paths[i]] = changed_paths[i].replace_first(old_path, new_path);
@@ -790,6 +799,91 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 		EditorNode::get_singleton()->add_io_error(TTR("Error moving:\n") + old_path + "\n");
 	}
 	memdelete(da);
+}
+
+void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const String &p_new_path) const {
+	//Ensure folder paths end with "/"
+	String old_path = (p_item.is_file || p_item.path.ends_with("/")) ? p_item.path : (p_item.path + "/");
+	String new_path = (p_item.is_file || p_new_path.ends_with("/")) ? p_new_path : (p_new_path + "/");
+
+	if (new_path == old_path) {
+		return;
+	} else if (old_path == "res://") {
+		EditorNode::get_singleton()->add_io_error(TTR("Cannot move/rename resources root."));
+		return;
+	} else if (!p_item.is_file && new_path.begins_with(old_path)) {
+		//This check doesn't erroneously catch renaming to a longer name as folder paths always end with "/"
+		EditorNode::get_singleton()->add_io_error(TTR("Cannot move a folder into itself.\n") + old_path + "\n");
+		return;
+	}
+
+	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	print_line("Duplicating " + old_path + " -> " + new_path);
+	Error err = da->copy(old_path, new_path);
+	if (err == OK) {
+		//Move/Rename any corresponding import settings too
+		if (p_item.is_file && FileAccess::exists(old_path + ".import")) {
+			err = da->copy(old_path + ".import", new_path + ".import");
+			if (err != OK) {
+				EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:\n") + old_path + ".import\n");
+			}
+		}
+	} else {
+		EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:\n") + old_path + "\n");
+	}
+	memdelete(da);
+}
+
+void FileSystemDock::_update_resource_paths_after_move(const Map<String, String> &p_renames) const {
+
+	//Rename all resources loaded, be it subresources or actual resources
+	List<Ref<Resource> > cached;
+	ResourceCache::get_cached_resources(&cached);
+
+	for (List<Ref<Resource> >::Element *E = cached.front(); E; E = E->next()) {
+
+		Ref<Resource> r = E->get();
+
+		String base_path = r->get_path();
+		String extra_path;
+		int sep_pos = r->get_path().find("::");
+		if (sep_pos >= 0) {
+			extra_path = base_path.substr(sep_pos, base_path.length());
+			base_path = base_path.substr(0, sep_pos);
+		}
+
+		if (p_renames.has(base_path)) {
+			base_path = p_renames[base_path];
+		}
+
+		r->set_path(base_path + extra_path);
+	}
+
+	for (int i = 0; i < EditorNode::get_editor_data().get_edited_scene_count(); i++) {
+
+		String path;
+		if (i == EditorNode::get_editor_data().get_edited_scene()) {
+			if (!get_tree()->get_edited_scene_root())
+				continue;
+
+			path = get_tree()->get_edited_scene_root()->get_filename();
+		} else {
+
+			path = EditorNode::get_editor_data().get_scene_path(i);
+		}
+
+		if (p_renames.has(path)) {
+			path = p_renames[path];
+		}
+
+		if (i == EditorNode::get_editor_data().get_edited_scene()) {
+
+			get_tree()->get_edited_scene_root()->set_filename(path);
+		} else {
+
+			EditorNode::get_editor_data().set_scene_path(i, path);
+		}
+	}
 }
 
 void FileSystemDock::_update_dependencies_after_move(const Map<String, String> &p_renames) const {
@@ -803,7 +897,10 @@ void FileSystemDock::_update_dependencies_after_move(const Map<String, String> &
 		String file = p_renames.has(remaps[i]) ? p_renames[remaps[i]] : remaps[i];
 		print_line("Remapping dependencies for: " + file);
 		Error err = ResourceLoader::rename_dependencies(file, p_renames);
-		if (err != OK) {
+		if (err == OK) {
+			if (ResourceLoader::get_resource_type(file) == "PackedScene")
+				editor->reload_scene(file);
+		} else {
 			EditorNode::get_singleton()->add_io_error(TTR("Unable to update dependencies:\n") + remaps[i] + "\n");
 		}
 	}
@@ -865,6 +962,40 @@ void FileSystemDock::_rename_operation_confirm() {
 	Map<String, String> renames;
 	_try_move_item(to_rename, new_path, renames);
 	_update_dependencies_after_move(renames);
+	_update_resource_paths_after_move(renames);
+
+	//Rescan everything
+	print_line("call rescan!");
+	_rescan();
+}
+
+void FileSystemDock::_duplicate_operation_confirm() {
+
+	String new_name = duplicate_dialog_text->get_text().strip_edges();
+	if (new_name.length() == 0) {
+		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
+		return;
+	} else if (new_name.find("/") != -1 || new_name.find("\\") != -1 || new_name.find(":") != -1) {
+		EditorNode::get_singleton()->show_warning(TTR("Name contains invalid characters."));
+		return;
+	}
+
+	String old_path = to_duplicate.path.ends_with("/") ? to_duplicate.path.substr(0, to_duplicate.path.length() - 1) : to_rename.path;
+	String new_path = old_path.get_base_dir().plus_file(new_name);
+	if (old_path == new_path) {
+		return;
+	}
+
+	//Present a more user friendly warning for name conflict
+	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	if (da->file_exists(new_path) || da->dir_exists(new_path)) {
+		EditorNode::get_singleton()->show_warning(TTR("A file or folder with this name already exists."));
+		memdelete(da);
+		return;
+	}
+	memdelete(da);
+
+	_try_duplicate_item(to_duplicate, new_name);
 
 	//Rescan everything
 	print_line("call rescan!");
@@ -881,6 +1012,8 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path) {
 	}
 
 	_update_dependencies_after_move(renames);
+	_update_resource_paths_after_move(renames);
+
 	print_line("call rescan!");
 	_rescan();
 }
@@ -892,10 +1025,11 @@ void FileSystemDock::_file_option(int p_option) {
 			OS::get_singleton()->shell_open(String("file://") + dir);
 		} break;
 		case FILE_OPEN: {
-			int idx = files->get_current();
-			if (idx < 0 || idx >= files->get_item_count())
-				break;
-			_select_file(idx);
+			for (int i = 0; i < files->get_item_count(); i++) {
+				if (files->is_selected(i)) {
+					_select_file(i);
+				}
+			}
 		} break;
 		case FILE_INSTANCE: {
 
@@ -984,6 +1118,27 @@ void FileSystemDock::_file_option(int p_option) {
 				//1) find if used
 				//2) warn
 			}
+		} break;
+		case FILE_DUPLICATE: {
+			int idx = files->get_current();
+			if (idx < 0 || idx >= files->get_item_count())
+				break;
+
+			to_duplicate.path = files->get_item_metadata(idx);
+			to_duplicate.is_file = !to_duplicate.path.ends_with("/");
+			if (to_duplicate.is_file) {
+				String name = to_duplicate.path.get_file();
+				duplicate_dialog->set_title(TTR("Duplicating file:") + " " + name);
+				duplicate_dialog_text->set_text(name);
+				duplicate_dialog_text->select(0, name.find_last("."));
+			} else {
+				String name = to_duplicate.path.substr(0, to_duplicate.path.length() - 1).get_file();
+				duplicate_dialog->set_title(TTR("Duplicating folder:") + " " + name);
+				duplicate_dialog_text->set_text(name);
+				duplicate_dialog_text->select(0, name.length());
+			}
+			duplicate_dialog->popup_centered_minsize(Size2(250, 80) * EDSCALE);
+			duplicate_dialog_text->grab_focus();
 		} break;
 		case FILE_INFO: {
 
@@ -1114,6 +1269,9 @@ void FileSystemDock::_go_to_file_list() {
 		tree->hide();
 		file_list_vb->show();
 		button_favorite->hide();
+	} else {
+		bool collapsed = tree->get_selected()->is_collapsed();
+		tree->get_selected()->set_collapsed(!collapsed);
 	}
 
 	//file_options->show();
@@ -1412,18 +1570,25 @@ void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
 
 	file_options->clear();
 	file_options->set_size(Size2(1, 1));
-	if (all_files && filenames.size() > 0) {
-		file_options->add_item(TTR("Open"), FILE_OPEN);
-		if (all_files_scenes) {
+	if (all_files) {
+
+		if (all_files_scenes && filenames.size() >= 1) {
+			file_options->add_item(TTR("Open Scene(s)"), FILE_OPEN);
 			file_options->add_item(TTR("Instance"), FILE_INSTANCE);
+			file_options->add_separator();
 		}
-		file_options->add_separator();
+
+		if (!all_files_scenes && filenames.size() == 1) {
+			file_options->add_item(TTR("Open"), FILE_OPEN);
+			file_options->add_separator();
+		}
 
 		if (filenames.size() == 1) {
 			file_options->add_item(TTR("Edit Dependencies.."), FILE_DEPENDENCIES);
 			file_options->add_item(TTR("View Owners.."), FILE_OWNERS);
 			file_options->add_separator();
 		}
+
 	} else if (all_folders && foldernames.size() > 0) {
 		file_options->add_item(TTR("Open"), FILE_OPEN);
 		file_options->add_separator();
@@ -1434,6 +1599,7 @@ void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
 		if (num_items == 1) {
 			file_options->add_item(TTR("Copy Path"), FILE_COPY_PATH);
 			file_options->add_item(TTR("Rename.."), FILE_RENAME);
+			file_options->add_item(TTR("Duplicate.."), FILE_DUPLICATE);
 		}
 		file_options->add_item(TTR("Move To.."), FILE_MOVE);
 		file_options->add_item(TTR("Delete"), FILE_REMOVE);
@@ -1545,6 +1711,7 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_make_dir_confirm"), &FileSystemDock::_make_dir_confirm);
 	ClassDB::bind_method(D_METHOD("_move_operation_confirm"), &FileSystemDock::_move_operation_confirm);
 	ClassDB::bind_method(D_METHOD("_rename_operation_confirm"), &FileSystemDock::_rename_operation_confirm);
+	ClassDB::bind_method(D_METHOD("_duplicate_operation_confirm"), &FileSystemDock::_duplicate_operation_confirm);
 
 	ClassDB::bind_method(D_METHOD("_search_changed"), &FileSystemDock::_search_changed);
 
@@ -1717,6 +1884,17 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	add_child(rename_dialog);
 	rename_dialog->register_text_enter(rename_dialog_text);
 	rename_dialog->connect("confirmed", this, "_rename_operation_confirm");
+
+	duplicate_dialog = memnew(ConfirmationDialog);
+	VBoxContainer *duplicate_dialog_vb = memnew(VBoxContainer);
+	duplicate_dialog->add_child(duplicate_dialog_vb);
+
+	duplicate_dialog_text = memnew(LineEdit);
+	duplicate_dialog_vb->add_margin_child(TTR("Name:"), duplicate_dialog_text);
+	duplicate_dialog->get_ok()->set_text(TTR("Duplicate"));
+	add_child(duplicate_dialog);
+	duplicate_dialog->register_text_enter(duplicate_dialog_text);
+	duplicate_dialog->connect("confirmed", this, "_duplicate_operation_confirm");
 
 	make_dir_dialog = memnew(ConfirmationDialog);
 	make_dir_dialog->set_title(TTR("Create Folder"));

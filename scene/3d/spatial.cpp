@@ -558,27 +558,27 @@ bool Spatial::is_visible() const {
 void Spatial::rotate(const Vector3 &p_normal, float p_radians) {
 
 	Transform t = get_transform();
-	t.basis.rotate(p_normal, p_radians);
+	t.basis.rotate_local(p_normal, p_radians); //use local rotation here, as it makes more sense here in tree hierarchy
 	set_transform(t);
 }
 
 void Spatial::rotate_x(float p_radians) {
 
 	Transform t = get_transform();
-	t.basis.rotate(Vector3(1, 0, 0), p_radians);
+	t.basis.rotate_local(Vector3(1, 0, 0), p_radians);
 	set_transform(t);
 }
 
 void Spatial::rotate_y(float p_radians) {
 
 	Transform t = get_transform();
-	t.basis.rotate(Vector3(0, 1, 0), p_radians);
+	t.basis.rotate_local(Vector3(0, 1, 0), p_radians);
 	set_transform(t);
 }
 void Spatial::rotate_z(float p_radians) {
 
 	Transform t = get_transform();
-	t.basis.rotate(Vector3(0, 0, 1), p_radians);
+	t.basis.rotate_local(Vector3(0, 0, 1), p_radians);
 	set_transform(t);
 }
 
@@ -756,8 +756,8 @@ void Spatial::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
 }
 
-Spatial::Spatial()
-	: xform_change(this) {
+Spatial::Spatial() :
+		xform_change(this) {
 
 	data.dirty = DIRTY_NONE;
 	data.children_lock = 0;

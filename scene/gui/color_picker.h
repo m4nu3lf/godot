@@ -129,7 +129,8 @@ public:
 	void set_edit_alpha(bool p_show);
 	bool is_editing_alpha() const;
 
-	ColorPicker *get_picker();
+	ColorPicker *get_picker() const;
+	PopupPanel *get_popup() const;
 
 	ColorPickerButton();
 };

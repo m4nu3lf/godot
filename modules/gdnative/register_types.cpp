@@ -45,7 +45,8 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
-#include "gd_native_library_editor.h"
+#include "gdnative_library_editor_plugin.h"
+#include "gdnative_library_singleton_editor.h"
 // Class used to discover singleton gdnative files
 
 static void actual_discoverer_handler();
@@ -99,20 +100,41 @@ static Set<String> get_gdnative_singletons(EditorFileSystemDirectory *p_dir) {
 }
 
 static void actual_discoverer_handler() {
+
 	EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->get_filesystem();
 
 	Set<String> file_paths = get_gdnative_singletons(dir);
 
+	bool changed = false;
+	Array current_files;
+	if (ProjectSettings::get_singleton()->has_setting("gdnative/singletons")) {
+		current_files = ProjectSettings::get_singleton()->get("gdnative/singletons");
+	}
 	Array files;
 	files.resize(file_paths.size());
 	int i = 0;
 	for (Set<String>::Element *E = file_paths.front(); E; i++, E = E->next()) {
+		if (!current_files.has(E->get())) {
+			changed = true;
+		}
 		files.set(i, E->get());
 	}
 
-	ProjectSettings::get_singleton()->set("gdnative/singletons", files);
+	// Check for removed files
+	if (!changed) {
+		for (int i = 0; i < current_files.size(); i++) {
+			if (!file_paths.has(current_files[i])) {
+				changed = true;
+				break;
+			}
+		}
+	}
 
-	ProjectSettings::get_singleton()->save();
+	if (changed) {
+
+		ProjectSettings::get_singleton()->set("gdnative/singletons", files);
+		ProjectSettings::get_singleton()->save();
+	}
 }
 
 static GDNativeSingletonDiscover *discoverer = NULL;
@@ -246,7 +268,7 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 
 static void editor_init_callback() {
 
-	GDNativeLibraryEditor *library_editor = memnew(GDNativeLibraryEditor);
+	GDNativeLibrarySingletonEditor *library_editor = memnew(GDNativeLibrarySingletonEditor);
 	library_editor->set_name(TTR("GDNative"));
 	ProjectSettingsEditor::get_singleton()->get_tabs()->add_child(library_editor);
 
@@ -257,6 +279,8 @@ static void editor_init_callback() {
 	export_plugin.instance();
 
 	EditorExport::get_singleton()->add_export_plugin(export_plugin);
+
+	EditorNode::get_singleton()->add_editor_plugin(memnew(GDNativeLibraryEditorPlugin(EditorNode::get_singleton())));
 }
 
 #endif

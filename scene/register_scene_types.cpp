@@ -160,6 +160,7 @@
 #include "scene/3d/area.h"
 #include "scene/3d/arvr_nodes.h"
 #include "scene/3d/audio_stream_player_3d.h"
+#include "scene/3d/baked_lightmap.h"
 #include "scene/3d/bone_attachment.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/collision_polygon.h"
@@ -198,6 +199,9 @@ static ResourceFormatLoaderText *resource_loader_text = NULL;
 static ResourceFormatLoaderDynamicFont *resource_loader_dynamic_font = NULL;
 
 static ResourceFormatLoaderStreamTexture *resource_loader_stream_texture = NULL;
+
+static ResourceFormatSaverShader *resource_saver_shader = NULL;
+static ResourceFormatLoaderShader *resource_loader_shader = NULL;
 
 void register_scene_types() {
 
@@ -267,11 +271,11 @@ void register_scene_types() {
 	ClassDB::register_class<Control>();
 	ClassDB::register_class<Button>();
 	ClassDB::register_class<Label>();
-	ClassDB::register_class<ScrollBar>();
+	ClassDB::register_virtual_class<ScrollBar>();
 	ClassDB::register_class<HScrollBar>();
 	ClassDB::register_class<VScrollBar>();
 	ClassDB::register_class<ProgressBar>();
-	ClassDB::register_class<Slider>();
+	ClassDB::register_virtual_class<Slider>();
 	ClassDB::register_class<HSlider>();
 	ClassDB::register_class<VSlider>();
 	ClassDB::register_class<Popup>();
@@ -282,7 +286,7 @@ void register_scene_types() {
 	ClassDB::register_class<ToolButton>();
 	ClassDB::register_class<LinkButton>();
 	ClassDB::register_class<Panel>();
-	ClassDB::register_class<Range>();
+	ClassDB::register_virtual_class<Range>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -375,6 +379,8 @@ void register_scene_types() {
 	ClassDB::register_class<ReflectionProbe>();
 	ClassDB::register_class<GIProbe>();
 	ClassDB::register_class<GIProbeData>();
+	ClassDB::register_class<BakedLightmap>();
+	ClassDB::register_class<BakedLightmapData>();
 	ClassDB::register_class<AnimationTreePlayer>();
 	ClassDB::register_class<Particles>();
 	ClassDB::register_class<Position3D>();
@@ -529,6 +535,7 @@ void register_scene_types() {
 	ClassDB::register_class<LargeTexture>();
 	ClassDB::register_class<CurveTexture>();
 	ClassDB::register_class<GradientTexture>();
+	ClassDB::register_class<ProxyTexture>();
 	ClassDB::register_class<CubeMap>();
 	ClassDB::register_class<Animation>();
 	ClassDB::register_virtual_class<Font>();
@@ -537,6 +544,8 @@ void register_scene_types() {
 
 	ClassDB::register_class<DynamicFontData>();
 	ClassDB::register_class<DynamicFont>();
+
+	DynamicFont::initialize_dynamic_fonts();
 
 	ClassDB::register_virtual_class<StyleBox>();
 	ClassDB::register_class<StyleBoxEmpty>();
@@ -601,6 +610,12 @@ void register_scene_types() {
 	resource_loader_text = memnew(ResourceFormatLoaderText);
 	ResourceLoader::add_resource_format_loader(resource_loader_text, true);
 
+	resource_saver_shader = memnew(ResourceFormatSaverShader);
+	ResourceSaver::add_resource_format_saver(resource_saver_shader, true);
+
+	resource_loader_shader = memnew(ResourceFormatLoaderShader);
+	ResourceLoader::add_resource_format_loader(resource_loader_shader, true);
+
 	for (int i = 0; i < 20; i++) {
 		GLOBAL_DEF("layer_names/2d_render/layer_" + itos(i + 1), "");
 		GLOBAL_DEF("layer_names/2d_physics/layer_" + itos(i + 1), "");
@@ -617,11 +632,20 @@ void unregister_scene_types() {
 	memdelete(resource_loader_stream_texture);
 	memdelete(resource_loader_theme);
 
+	DynamicFont::finish_dynamic_fonts();
+
 	if (resource_saver_text) {
 		memdelete(resource_saver_text);
 	}
 	if (resource_loader_text) {
 		memdelete(resource_loader_text);
+	}
+
+	if (resource_saver_shader) {
+		memdelete(resource_saver_shader);
+	}
+	if (resource_loader_shader) {
+		memdelete(resource_loader_shader);
 	}
 
 	SpatialMaterial::finish_shaders();

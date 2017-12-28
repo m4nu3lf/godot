@@ -11,7 +11,7 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_popup">
+		<method name="get_popup" qualifiers="const">
 			<return type="PopupMenu">
 			</return>
 			<description>
@@ -19,10 +19,6 @@
 			</description>
 		</method>
 	</methods>
-	<members>
-		<member name="items" type="Array" setter="_set_items" getter="_get_items">
-		</member>
-	</members>
 	<signals>
 		<signal name="about_to_show">
 			<description>

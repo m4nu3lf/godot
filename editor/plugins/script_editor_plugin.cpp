@@ -132,7 +132,7 @@ public:
 				I = I->next();
 			}
 
-			if (O != E) { //should never heppane..
+			if (O != E) { //should never happen..
 				cached.erase(O);
 			}
 		}
@@ -234,7 +234,6 @@ ScriptEditorQuickOpen::ScriptEditorQuickOpen() {
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
-	//set_child_rect(vbc);
 	search_box = memnew(LineEdit);
 	vbc->add_margin_child(TTR("Search:"), search_box);
 	search_box->connect("text_changed", this, "_text_changed");
@@ -256,8 +255,6 @@ ScriptEditor *ScriptEditor::script_editor = NULL;
 /*** SCRIPT EDITOR ******/
 
 String ScriptEditor::_get_debug_tooltip(const String &p_text, Node *_se) {
-
-	//ScriptEditorBase *se=Object::cast_to<ScriptEditorBase>(_se);
 
 	String val = debugger->get_var_value(p_text);
 	if (val != String()) {
@@ -551,8 +548,6 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save) {
 			idx = history[history_pos].control->get_index();
 		}
 		tab_container->set_current_tab(idx);
-
-		//script_list->select(idx);
 	}
 
 	_update_history_arrows();
@@ -584,6 +579,12 @@ void ScriptEditor::_close_docs_tab() {
 			_close_tab(i);
 		}
 	}
+}
+
+void ScriptEditor::_copy_script_path() {
+	ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(tab_container->get_current_tab()));
+	Ref<Script> script = se->get_edited_script();
+	OS::get_singleton()->set_clipboard(script->get_path());
 }
 
 void ScriptEditor::_close_other_tabs() {
@@ -692,7 +693,6 @@ void ScriptEditor::_reload_scripts() {
 		uint64_t last_date = script->get_last_modified_time();
 		uint64_t date = FileAccess::get_modified_time(script->get_path());
 
-		//printf("last date: %lli vs date: %lli\n",last_date,date);
 		if (last_date == date) {
 			continue;
 		}
@@ -770,7 +770,6 @@ bool ScriptEditor::_test_script_times_on_disk(Ref<Script> p_for_script) {
 			uint64_t last_date = script->get_last_modified_time();
 			uint64_t date = FileAccess::get_modified_time(script->get_path());
 
-			//printf("last date: %lli vs date: %lli\n",last_date,date);
 			if (last_date != date) {
 
 				TreeItem *ti = disk_changed_list->create_item(r);
@@ -780,7 +779,6 @@ bool ScriptEditor::_test_script_times_on_disk(Ref<Script> p_for_script) {
 					need_ask = true;
 				}
 				need_reload = true;
-				//r->set_metadata(0,);
 			}
 		}
 	}
@@ -1026,6 +1024,9 @@ void ScriptEditor::_menu_option(int p_option) {
 					_close_current_tab();
 				}
 			} break;
+			case FILE_COPY_PATH: {
+				_copy_script_path();
+			} break;
 			case CLOSE_DOCS: {
 				_close_docs_tab();
 			} break;
@@ -1196,9 +1197,6 @@ void ScriptEditor::_notification(int p_what) {
 			_update_modified_scripts_for_external_editor();
 		} break;
 
-		case NOTIFICATION_PROCESS: {
-		} break;
-
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
 			help_search->set_icon(get_icon("HelpSearch", "EditorIcons"));
@@ -1320,12 +1318,12 @@ void ScriptEditor::_members_overview_selected(int p_idx) {
 	if (!se) {
 		return;
 	}
-	Dictionary state;
-	state["scroll_position"] = members_overview->get_item_metadata(p_idx);
+	// Go to the member's line and reset the cursor column. We can't just change scroll_position
+	// directly, since code might be folded.
+	se->goto_line(members_overview->get_item_metadata(p_idx));
+	Dictionary state = se->get_edit_state();
 	state["column"] = 0;
-	state["row"] = members_overview->get_item_metadata(p_idx);
 	se->set_edit_state(state);
-	se->ensure_focus();
 }
 
 void ScriptEditor::_help_overview_selected(int p_idx) {
@@ -1358,18 +1356,9 @@ void ScriptEditor::ensure_select_current() {
 
 			if (!grab_focus_block && is_visible_in_tree())
 				se->ensure_focus();
-
-			//edit_menu->show();
-			//search_menu->show();
 		}
 
 		EditorHelp *eh = Object::cast_to<EditorHelp>(current);
-
-		if (eh) {
-			//edit_menu->hide();
-			//search_menu->hide();
-			//script_search_menu->show();
-		}
 	}
 
 	_update_selected_editor_menu();
@@ -1814,12 +1803,8 @@ void ScriptEditor::save_all_scripts() {
 		if (script.is_valid())
 			se->apply_code();
 
-		if (script->get_path() != "" && script->get_path().find("local://") == -1 && script->get_path().find("::") == -1) {
-			//external script, save it
-
-			editor->save_resource(script);
-			//ResourceSaver::save(script->get_path(),script);
-		}
+		if (script->get_path() != "" && script->get_path().find("local://") == -1 && script->get_path().find("::") == -1)
+			editor->save_resource(script); //external script, save it
 	}
 
 	_update_script_names();
@@ -1834,6 +1819,11 @@ void ScriptEditor::apply_scripts() const {
 			continue;
 		se->apply_code();
 	}
+}
+
+void ScriptEditor::open_script_create_dialog(const String &p_base_name, const String &p_base_path) {
+	_menu_option(FILE_NEW);
+	script_create_dialog->config(p_base_name, p_base_path);
 }
 
 void ScriptEditor::_editor_play() {
@@ -1872,7 +1862,6 @@ void ScriptEditor::_editor_stop() {
 
 void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const PoolStringArray &p_args) {
 
-	//print_line("add callback! hohoho"); kinda sad to remove this
 	ERR_FAIL_COND(!p_obj);
 	Ref<Script> script = p_obj->get_script();
 	ERR_FAIL_COND(!script.is_valid());
@@ -1966,8 +1955,6 @@ void ScriptEditor::_script_split_dragged(float) {
 }
 
 Variant ScriptEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
-
-	// return Variant(); // return this if drag disabled
 
 	Node *cur_node = tab_container->get_child(tab_container->get_current_tab());
 
@@ -2175,6 +2162,7 @@ void ScriptEditor::_make_script_list_context_menu() {
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_all"), CLOSE_ALL);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_other_tabs"), CLOSE_OTHER_TABS);
 		context_menu->add_separator();
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_path"), FILE_COPY_PATH);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/reload_script_soft"), FILE_TOOL_RELOAD_SOFT);
 
 		Ref<Script> scr = se->get_edited_script();
@@ -2187,9 +2175,6 @@ void ScriptEditor::_make_script_list_context_menu() {
 	}
 
 	EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_child(selected));
-	if (eh) {
-		// nothing
-	}
 
 	context_menu->add_separator();
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_move_up"), WINDOW_MOVE_UP);
@@ -2507,6 +2492,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_help_search", &ScriptEditor::_help_search);
 	ClassDB::bind_method("_help_index", &ScriptEditor::_help_index);
 	ClassDB::bind_method("_save_history", &ScriptEditor::_save_history);
+	ClassDB::bind_method("_copy_script_path", &ScriptEditor::_copy_script_path);
 
 	ClassDB::bind_method("_breaked", &ScriptEditor::_breaked);
 	ClassDB::bind_method("_show_debugger", &ScriptEditor::_show_debugger);
@@ -2531,12 +2517,13 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_script_changed", &ScriptEditor::_script_changed);
 	ClassDB::bind_method("_update_recent_scripts", &ScriptEditor::_update_recent_scripts);
 
-	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &ScriptEditor::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &ScriptEditor::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("drop_data_fw"), &ScriptEditor::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("get_drag_data_fw", "point", "from"), &ScriptEditor::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("can_drop_data_fw", "point", "data", "from"), &ScriptEditor::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("drop_data_fw", "point", "data", "from"), &ScriptEditor::drop_data_fw);
 
 	ClassDB::bind_method(D_METHOD("get_current_script"), &ScriptEditor::_get_current_script);
 	ClassDB::bind_method(D_METHOD("get_open_scripts"), &ScriptEditor::_get_open_scripts);
+	ClassDB::bind_method(D_METHOD("open_script_create_dialog", "base_name", "base_path"), &ScriptEditor::open_script_create_dialog);
 
 	ADD_SIGNAL(MethodInfo("editor_script_changed", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
 	ADD_SIGNAL(MethodInfo("script_close", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
@@ -2571,10 +2558,9 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	script_list = memnew(ItemList);
 	list_split->add_child(script_list);
-	script_list->set_custom_minimum_size(Size2(150 * EDSCALE, 100)); //need to give a bit of limit to avoid it from disappearing
+	script_list->set_custom_minimum_size(Size2(150 * EDSCALE, 90)); //need to give a bit of limit to avoid it from disappearing
 	script_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	script_split->set_split_offset(140);
-	//list_split->set_split_offset(500);
 	_sort_list_on_update = true;
 	script_list->connect("gui_input", this, "_script_list_gui_input");
 	script_list->set_allow_rmb_select(true);
@@ -2586,18 +2572,18 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	members_overview = memnew(ItemList);
 	list_split->add_child(members_overview);
-	members_overview->set_custom_minimum_size(Size2(0, 100)); //need to give a bit of limit to avoid it from disappearing
+	members_overview->set_custom_minimum_size(Size2(0, 90)); //need to give a bit of limit to avoid it from disappearing
 	members_overview->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	help_overview = memnew(ItemList);
 	list_split->add_child(help_overview);
-	help_overview->set_custom_minimum_size(Size2(0, 100)); //need to give a bit of limit to avoid it from disappearing
+	help_overview->set_custom_minimum_size(Size2(0, 90)); //need to give a bit of limit to avoid it from disappearing
 	help_overview->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	tab_container = memnew(TabContainer);
 	tab_container->set_tabs_visible(false);
+	tab_container->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
 	script_split->add_child(tab_container);
-
 	tab_container->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	ED_SHORTCUT("script_editor/window_sort", TTR("Sort"));
@@ -2626,6 +2612,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_all", TTR("Save All"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_S), FILE_SAVE_ALL);
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_script_soft", TTR("Soft Reload Script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_R), FILE_TOOL_RELOAD_SOFT);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/copy_path", TTR("Copy Script Path")), FILE_COPY_PATH);
 	file_menu->get_popup()->add_separator();
 
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_previous", TTR("History Prev"), KEY_MASK_ALT | KEY_LEFT), WINDOW_PREV);
@@ -2744,7 +2731,6 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	{
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		disk_changed->add_child(vbc);
-		//disk_changed->set_child_rect(vbc);
 
 		Label *dl = memnew(Label);
 		dl->set_text(TTR("The following files are newer on disk.\nWhat action should be taken?:"));

@@ -78,50 +78,40 @@ void EditorHelpSearch::_sbox_input(const Ref<InputEvent> &p_ie) {
 	}
 }
 
-void EditorHelpSearch::_update_search() {
+class EditorHelpSearch::IncrementalSearch : public Reference {
+	String term;
+	TreeItem *root;
 
-	search_options->clear();
-	search_options->set_hide_root(true);
+	EditorHelpSearch *search;
+	Tree *search_options;
 
-	/*
-	TreeItem *root = search_options->create_item();
-	_parse_fs(EditorFileSystem::get_singleton()->get_filesystem());
-*/
+	DocData *doc;
+	Ref<Texture> def_icon;
 
-	List<StringName> type_list;
-	ClassDB::get_class_list(&type_list);
+	int phase;
+	Map<String, DocData::ClassDoc>::Element *iterator;
 
-	DocData *doc = EditorHelp::get_doc_data();
-	String term = search_box->get_text();
-	if (term.length() < 2)
-		return;
-
-	TreeItem *root = search_options->create_item();
-
-	Ref<Texture> def_icon = get_icon("Node", "EditorIcons");
-	//classes first
-	for (Map<String, DocData::ClassDoc>::Element *E = doc->class_list.front(); E; E = E->next()) {
+	void phase1(Map<String, DocData::ClassDoc>::Element *E) {
 
 		if (E->key().findn(term) != -1) {
 
 			TreeItem *item = search_options->create_item(root);
 			item->set_metadata(0, "class_name:" + E->key());
 			item->set_text(0, E->key() + " (Class)");
-			if (has_icon(E->key(), "EditorIcons"))
-				item->set_icon(0, get_icon(E->key(), "EditorIcons"));
+			if (search->has_icon(E->key(), "EditorIcons"))
+				item->set_icon(0, search->get_icon(E->key(), "EditorIcons"));
 			else
 				item->set_icon(0, def_icon);
 		}
 	}
 
-	//class methods, etc second
-	for (Map<String, DocData::ClassDoc>::Element *E = doc->class_list.front(); E; E = E->next()) {
+	void phase2(Map<String, DocData::ClassDoc>::Element *E) {
 
 		DocData::ClassDoc &c = E->get();
 
 		Ref<Texture> cicon;
-		if (has_icon(E->key(), "EditorIcons"))
-			cicon = get_icon(E->key(), "EditorIcons");
+		if (search->has_icon(E->key(), "EditorIcons"))
+			cicon = search->get_icon(E->key(), "EditorIcons");
 		else
 			cicon = def_icon;
 
@@ -180,72 +170,81 @@ void EditorHelpSearch::_update_search() {
 		}
 	}
 
-	//same but descriptions
+	bool slice() {
 
-	for (Map<String, DocData::ClassDoc>::Element *E = doc->class_list.front(); E; E = E->next()) {
+		if (phase > 2)
+			return true;
 
-		DocData::ClassDoc &c = E->get();
+		if (iterator) {
 
-		Ref<Texture> cicon;
-		if (has_icon(E->key(), "EditorIcons"))
-			cicon = get_icon(E->key(), "EditorIcons");
-		else
-			cicon = def_icon;
+			switch (phase) {
 
-		if (c.description.findn(term) != -1) {
-
-			TreeItem *item = search_options->create_item(root);
-			item->set_metadata(0, "class_desc:" + E->key());
-			item->set_text(0, E->key() + " (Class Description)");
-			item->set_icon(0, cicon);
-		}
-
-		for (int i = 0; i < c.methods.size(); i++) {
-
-			if (c.methods[i].description.findn(term) != -1) {
-
-				TreeItem *item = search_options->create_item(root);
-				item->set_metadata(0, "class_method_desc:" + E->key() + ":" + c.methods[i].name);
-				item->set_text(0, E->key() + "." + c.methods[i].name + " (Method Description)");
-				item->set_icon(0, cicon);
+				case 1: {
+					phase1(iterator);
+				} break;
+				case 2: {
+					phase2(iterator);
+				} break;
+				default: {
+					WARN_PRINT("illegal phase in IncrementalSearch");
+					return true;
+				}
 			}
+
+			iterator = iterator->next();
+		} else {
+
+			phase += 1;
+			iterator = doc->class_list.front();
 		}
 
-		for (int i = 0; i < c.signals.size(); i++) {
-
-			if (c.signals[i].description.findn(term) != -1) {
-
-				TreeItem *item = search_options->create_item(root);
-				item->set_metadata(0, "class_signal:" + E->key() + ":" + c.signals[i].name);
-				item->set_text(0, E->key() + "." + c.signals[i].name + " (Signal Description)");
-				item->set_icon(0, cicon);
-			}
-		}
-
-		for (int i = 0; i < c.constants.size(); i++) {
-
-			if (c.constants[i].description.findn(term) != -1) {
-
-				TreeItem *item = search_options->create_item(root);
-				item->set_metadata(0, "class_constant:" + E->key() + ":" + c.constants[i].name);
-				item->set_text(0, E->key() + "." + c.constants[i].name + " (Constant Description)");
-				item->set_icon(0, cicon);
-			}
-		}
-
-		for (int i = 0; i < c.properties.size(); i++) {
-
-			if (c.properties[i].description.findn(term) != -1) {
-
-				TreeItem *item = search_options->create_item(root);
-				item->set_metadata(0, "class_property_desc:" + E->key() + ":" + c.properties[i].name);
-				item->set_text(0, E->key() + "." + c.properties[i].name + " (Property Description)");
-				item->set_icon(0, cicon);
-			}
-		}
+		return false;
 	}
 
-	get_ok()->set_disabled(root->get_children() == NULL);
+public:
+	IncrementalSearch(EditorHelpSearch *p_search, Tree *p_search_options, const String &p_term) :
+			search(p_search),
+			search_options(p_search_options) {
+
+		def_icon = search->get_icon("Node", "EditorIcons");
+		doc = EditorHelp::get_doc_data();
+
+		term = p_term;
+
+		root = search_options->create_item();
+		phase = 0;
+		iterator = 0;
+	}
+
+	bool empty() const {
+
+		return root->get_children() == NULL;
+	}
+
+	bool work(uint64_t slot = 1000000 / 10) {
+
+		const uint64_t until = OS::get_singleton()->get_ticks_usec() + slot;
+
+		while (!slice()) {
+
+			if (OS::get_singleton()->get_ticks_usec() > until)
+				return false;
+		}
+
+		return true;
+	}
+};
+
+void EditorHelpSearch::_update_search() {
+	search_options->clear();
+	search_options->set_hide_root(true);
+
+	String term = search_box->get_text();
+	if (term.length() < 2)
+		return;
+
+	search = Ref<IncrementalSearch>(memnew(IncrementalSearch(this, search_options, term)));
+	set_process(true);
 }
 
 void EditorHelpSearch::_confirmed() {
@@ -281,6 +280,20 @@ void EditorHelpSearch::_notification(int p_what) {
 
 		//_update_icons
 		search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+	} else if (p_what == NOTIFICATION_PROCESS) {
+
+		if (search.is_valid()) {
+
+			if (search->work()) {
+
+				get_ok()->set_disabled(search->empty());
+				search = Ref<IncrementalSearch>();
+				set_process(false);
+			}
+		} else {
+
+			set_process(false);
+		}
 	}
 }
 
@@ -311,23 +324,14 @@ EditorHelpSearch::EditorHelpSearch() {
 	set_hide_on_ok(false);
 	search_options->connect("item_activated", this, "_confirmed");
 	set_title(TTR("Search Help"));
-
-	//search_options->set_hide_root(true);
 }
 
 /////////////////////////////////
-
-////////////////////////////////////
-/// /////////////////////////////////
 
 void EditorHelpIndex::add_type(const String &p_type, HashMap<String, TreeItem *> &p_types, TreeItem *p_root) {
 
 	if (p_types.has(p_type))
 		return;
-	/*
-	if (!ClassDB::is_type(p_type,base) || p_type==base)
-		return;
-	*/
 
 	String inherits = EditorHelp::get_doc_data()->class_list[p_type].inherits;
 
@@ -366,8 +370,6 @@ void EditorHelpIndex::_tree_item_selected() {
 	EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
 	emit_signal("open_class", s->get_text(0));
 	hide();
-
-	//_goto_desc(s->get_text(0));
 }
 
 void EditorHelpIndex::select_class(const String &p_class) {
@@ -433,12 +435,11 @@ void EditorHelpIndex::_update_class_list() {
 			while (type != "") {
 				if (filter.is_subsequence_ofi(type)) {
 
-					if (to_select.empty()) {
+					if (to_select.empty() || type.length() < to_select.length()) {
 						to_select = type;
 					}
 
 					found = true;
-					break;
 				}
 
 				type = EditorHelp::get_doc_data()->class_list[type].inherits;
@@ -506,9 +507,20 @@ EditorHelpIndex::EditorHelpIndex() {
 
 /////////////////////////////////
 
-////////////////////////////////////
-/// /////////////////////////////////
 DocData *EditorHelp::doc = NULL;
+
+void EditorHelp::_init_colors() {
+
+	title_color = get_color("accent_color", "Editor");
+	text_color = get_color("default_color", "RichTextLabel");
+	headline_color = get_color("headline_color", "EditorHelp");
+	base_type_color = title_color.linear_interpolate(text_color, 0.5);
+	comment_color = Color(text_color.r, text_color.g, text_color.b, 0.6);
+	symbol_color = comment_color;
+	value_color = Color(text_color.r, text_color.g, text_color.b, 0.4);
+	qualifier_color = Color(text_color.r, text_color.g, text_color.b, 0.8);
+	type_color = get_color("accent_color", "Editor").linear_interpolate(text_color, 0.5);
+}
 
 void EditorHelp::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 
@@ -547,9 +559,7 @@ void EditorHelp::_class_list_select(const String &p_select) {
 
 void EditorHelp::_class_desc_select(const String &p_select) {
 
-	//print_line("LINK: "+p_select);
 	if (p_select.begins_with("$")) { //enum
-		//_goto_desc(p_select.substr(1,p_select.length()));
 		String select = p_select.substr(1, p_select.length());
 		String class_name;
 		if (select.find(".") != -1) {
@@ -560,7 +570,6 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		emit_signal("go_to_help", "class_enum:" + class_name + ":" + select);
 		return;
 	} else if (p_select.begins_with("#")) {
-		//_goto_desc(p_select.substr(1,p_select.length()));
 		emit_signal("go_to_help", "class_name:" + p_select.substr(1, p_select.length()));
 		return;
 	} else if (p_select.begins_with("@")) {
@@ -587,7 +596,6 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		}
 
 		if (link.find(".") != -1) {
-			//must go somewhere else
 
 			emit_signal("go_to_help", topic + ":" + link.get_slice(".", 0) + ":" + link.get_slice(".", 1));
 		} else {
@@ -642,18 +650,95 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 	class_desc->pop();
 }
 
+void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview) {
+
+	method_line[p_method.name] = class_desc->get_line_count() - 2; //gets overridden if description
+
+	const bool is_vararg = p_method.qualifiers.find("vararg") != -1;
+
+	if (p_overview) {
+		class_desc->push_cell();
+		class_desc->push_align(RichTextLabel::ALIGN_RIGHT);
+	}
+
+	_add_type(p_method.return_type, p_method.return_enum);
+
+	if (p_overview) {
+		class_desc->pop(); //align
+		class_desc->pop(); //cell
+		class_desc->push_cell();
+	} else {
+		class_desc->add_text(" ");
+	}
+
+	if (p_overview && p_method.description != "") {
+		class_desc->push_meta("@method" + p_method.name);
+	}
+
+	class_desc->push_color(headline_color);
+	_add_text(p_method.name);
+	class_desc->pop();
+
+	if (p_overview && p_method.description != "") {
+		class_desc->pop(); //meta
+	}
+
+	class_desc->push_color(symbol_color);
+	class_desc->add_text(p_method.arguments.size() || is_vararg ? "( " : "(");
+	class_desc->pop();
+
+	for (int j = 0; j < p_method.arguments.size(); j++) {
+		class_desc->push_color(text_color);
+		if (j > 0)
+			class_desc->add_text(", ");
+		_add_type(p_method.arguments[j].type, p_method.arguments[j].enumeration);
+		class_desc->add_text(" ");
+		_add_text(p_method.arguments[j].name);
+		if (p_method.arguments[j].default_value != "") {
+
+			class_desc->push_color(symbol_color);
+			class_desc->add_text("=");
+			class_desc->pop();
+			_add_text(p_method.arguments[j].default_value);
+		}
+
+		class_desc->pop();
+	}
+
+	if (is_vararg) {
+		class_desc->push_color(text_color);
+		if (p_method.arguments.size())
+			class_desc->add_text(", ");
+		class_desc->push_color(symbol_color);
+		class_desc->add_text("...");
+		class_desc->pop();
+		class_desc->pop();
+	}
+
+	class_desc->push_color(symbol_color);
+	class_desc->add_text(p_method.arguments.size() || is_vararg ? " )" : ")");
+	class_desc->pop();
+	if (p_method.qualifiers != "") {
+
+		class_desc->push_color(qualifier_color);
+		class_desc->add_text(" ");
+		_add_text(p_method.qualifiers);
+		class_desc->pop();
+	}
+
+	if (p_overview)
+		class_desc->pop(); //cell
+}
+
 Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 
-	//ERR_FAIL_COND(!doc->class_list.has(p_class));
 	if (!doc->class_list.has(p_class))
 		return ERR_DOES_NOT_EXIST;
 
-	//if (tree_item_map.has(p_class)) {
 	select_locked = true;
-	//}
 
 	class_desc->show();
-	//tabs->set_current_tab(PAGE_CLASS_DESC);
+
 	description_line = 0;
 
 	if (p_class == edited_class)
@@ -665,17 +750,8 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 	method_line.clear();
 	section_line.clear();
 	edited_class = p_class;
-	//edited_class->show();
 
-	// Colors
-	const Color title_color = get_color("accent_color", "Editor");
-	const Color text_color = get_color("default_color", "RichTextLabel");
-	const Color headline_color = get_color("headline_color", "EditorHelp");
-	const Color base_type_color = title_color.linear_interpolate(text_color, 0.5);
-	const Color comment_color = Color(text_color.r, text_color.g, text_color.b, 0.6);
-	const Color symbol_color = comment_color;
-	const Color value_color = Color(text_color.r, text_color.g, text_color.b, 0.4);
-	const Color qualifier_color = Color(text_color.r, text_color.g, text_color.b, 0.8);
+	_init_colors();
 
 	DocData::ClassDoc cd = doc->class_list[p_class]; //make a copy, so we can sort without worrying
 
@@ -769,7 +845,6 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 		class_desc->pop();
 		class_desc->pop();
 
-		//class_desc->add_newline();
 		class_desc->add_newline();
 		class_desc->push_color(text_color);
 		class_desc->push_font(doc_font);
@@ -794,7 +869,6 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 		class_desc->add_text(TTR("Members:"));
 		class_desc->pop();
 		class_desc->pop();
-		//class_desc->add_newline();
 
 		class_desc->push_indent(1);
 		class_desc->push_table(2);
@@ -873,87 +947,63 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 		class_desc->pop();
 		class_desc->pop();
 
-		//class_desc->add_newline();
-		//class_desc->add_newline();
-
+		class_desc->push_font(doc_code_font);
 		class_desc->push_indent(1);
 		class_desc->push_table(2);
 		class_desc->set_table_column_expand(1, 1);
 
-		for (int i = 0; i < methods.size(); i++) {
+		bool any_previous = false;
+		for (int pass = 0; pass < 2; pass++) {
+			Vector<DocData::MethodDoc> m;
 
-			bool is_vararg = methods[i].qualifiers.find("vararg") != -1;
-
-			method_line[methods[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
-
-			class_desc->push_cell();
-			class_desc->push_align(RichTextLabel::ALIGN_RIGHT);
-			class_desc->push_font(doc_code_font);
-			_add_type(methods[i].return_type, methods[i].return_enum);
-			//class_desc->add_text(" ");
-			class_desc->pop(); //align
-			class_desc->pop(); //font
-			class_desc->pop(); //cell
-
-			class_desc->push_cell();
-			class_desc->push_font(doc_code_font);
-
-			if (methods[i].description != "") {
-				method_descr = true;
-				class_desc->push_meta("@method" + methods[i].name);
+			for (int i = 0; i < methods.size(); i++) {
+				const String &q = methods[i].qualifiers;
+				if ((pass == 0 && q.find("virtual") != -1) || (pass == 1 && q.find("virtual") == -1)) {
+					m.push_back(methods[i]);
+				}
 			}
-			class_desc->push_color(headline_color);
-			_add_text(methods[i].name);
-			class_desc->pop();
-			if (methods[i].description != "")
-				class_desc->pop(); // pop meta
-			class_desc->push_color(symbol_color);
-			class_desc->add_text(methods[i].arguments.size() || is_vararg ? "( " : "(");
-			class_desc->pop();
-			for (int j = 0; j < methods[i].arguments.size(); j++) {
-				class_desc->push_color(text_color);
-				if (j > 0)
-					class_desc->add_text(", ");
-				_add_type(methods[i].arguments[j].type, methods[i].arguments[j].enumeration);
-				class_desc->add_text(" ");
-				_add_text(methods[i].arguments[j].name);
-				if (methods[i].arguments[j].default_value != "") {
 
-					class_desc->push_color(symbol_color);
-					class_desc->add_text("=");
-					class_desc->pop();
-					_add_text(methods[i].arguments[j].default_value);
+			if (any_previous && !m.empty()) {
+				class_desc->push_cell();
+				class_desc->pop(); //cell
+				class_desc->push_cell();
+				class_desc->pop(); //cell
+				any_previous = false;
+			}
+
+			String group_prefix;
+			for (int i = 0; i < m.size(); i++) {
+				const String new_prefix = m[i].name.substr(0, 3);
+				bool is_new_group = false;
+
+				if (i < m.size() - 1 && new_prefix == m[i + 1].name.substr(0, 3) && new_prefix != group_prefix) {
+					is_new_group = i > 0;
+					group_prefix = new_prefix;
+				} else if (group_prefix != "" && new_prefix != group_prefix) {
+					is_new_group = true;
+					group_prefix = "";
 				}
 
-				class_desc->pop();
+				if (is_new_group && pass == 1) {
+					class_desc->push_cell();
+					class_desc->pop(); //cell
+					class_desc->push_cell();
+					class_desc->pop(); //cell
+				}
+
+				if (m[i].description != "") {
+					method_descr = true;
+				}
+
+				_add_method(m[i], true);
 			}
 
-			if (is_vararg) {
-				class_desc->push_color(text_color);
-				if (methods[i].arguments.size())
-					class_desc->add_text(", ");
-				class_desc->push_color(symbol_color);
-				class_desc->add_text("...");
-				class_desc->pop();
-				class_desc->pop();
-			}
-
-			class_desc->push_color(symbol_color);
-			class_desc->add_text(methods[i].arguments.size() || is_vararg ? " )" : ")");
-			class_desc->pop();
-			if (methods[i].qualifiers != "") {
-
-				class_desc->push_color(qualifier_color);
-				class_desc->add_text(" ");
-				_add_text(methods[i].qualifiers);
-				class_desc->pop();
-			}
-			class_desc->pop(); //monofont
-			//class_desc->add_newline();
-			class_desc->pop(); //cell
+			any_previous = !m.empty();
 		}
+
 		class_desc->pop(); //table
 		class_desc->pop();
+		class_desc->pop(); // font
 		class_desc->add_newline();
 		class_desc->add_newline();
 	}
@@ -1024,7 +1074,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 		class_desc->pop();
 
 		class_desc->add_newline();
-		//class_desc->add_newline();
+		class_desc->add_newline();
 
 		class_desc->push_indent(1);
 
@@ -1032,8 +1082,6 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 
 			signal_line[cd.signals[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
 			class_desc->push_font(doc_code_font); // monofont
-			//_add_type("void");
-			//class_desc->add_text(" ");
 			class_desc->push_color(headline_color);
 			_add_text(cd.signals[i].name);
 			class_desc->pop();
@@ -1067,7 +1115,6 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 				class_desc->push_font(doc_font);
 				class_desc->push_color(comment_color);
 				class_desc->push_indent(1);
-				// class_desc->add_text(" ");
 				_add_text(cd.signals[i].description);
 				class_desc->pop(); // indent
 				class_desc->pop();
@@ -1111,7 +1158,6 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 			class_desc->push_indent(1);
 
 			class_desc->add_newline();
-			//class_desc->add_newline();
 
 			for (Map<String, Vector<DocData::ConstantDoc> >::Element *E = enums.front(); E; E = E->next()) {
 
@@ -1186,7 +1232,6 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 			class_desc->push_indent(1);
 
 			class_desc->add_newline();
-			//class_desc->add_newline();
 
 			for (int i = 0; i < constants.size(); i++) {
 
@@ -1205,7 +1250,6 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 				if (constants[i].description != "") {
 					class_desc->push_font(doc_font);
 					class_desc->push_indent(1);
-					//class_desc->add_text("  ");
 					class_desc->push_color(comment_color);
 					_add_text(constants[i].description);
 					class_desc->pop();
@@ -1278,8 +1322,6 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 			class_desc->pop(); // color
 			class_desc->pop(); // font
 			class_desc->pop(); // cell
-
-			//class_desc->add_text(" ");
 
 			if (cd.properties[i].setter != "") {
 
@@ -1354,59 +1396,8 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 
 		for (int i = 0; i < methods.size(); i++) {
 
-			bool is_vararg = methods[i].qualifiers.find("vararg") != -1;
-
-			method_line[methods[i].name] = class_desc->get_line_count() - 2;
-
 			class_desc->push_font(doc_code_font);
-			_add_type(methods[i].return_type, methods[i].return_enum);
-
-			class_desc->add_text(" ");
-			class_desc->push_color(headline_color);
-			_add_text(methods[i].name);
-			class_desc->pop();
-			class_desc->push_color(symbol_color);
-			class_desc->add_text(methods[i].arguments.size() || is_vararg ? "( " : "(");
-			class_desc->pop();
-			for (int j = 0; j < methods[i].arguments.size(); j++) {
-				class_desc->push_color(text_color);
-				if (j > 0)
-					class_desc->add_text(", ");
-				_add_type(methods[i].arguments[j].type, methods[i].arguments[j].enumeration);
-				class_desc->add_text(" ");
-				_add_text(methods[i].arguments[j].name);
-				if (methods[i].arguments[j].default_value != "") {
-
-					class_desc->push_color(symbol_color);
-					class_desc->add_text("=");
-					class_desc->pop();
-					_add_text(methods[i].arguments[j].default_value);
-				}
-
-				class_desc->pop();
-			}
-
-			if (is_vararg) {
-				class_desc->push_color(text_color);
-				if (methods[i].arguments.size())
-					class_desc->add_text(", ");
-				class_desc->push_color(symbol_color);
-				class_desc->add_text("...");
-				class_desc->pop();
-				class_desc->pop();
-			}
-
-			class_desc->push_color(symbol_color);
-			class_desc->add_text(methods[i].arguments.size() || is_vararg ? " )" : ")");
-			class_desc->pop();
-			if (methods[i].qualifiers != "") {
-
-				class_desc->push_color(qualifier_color);
-				class_desc->add_text(" ");
-				_add_text(methods[i].qualifiers);
-				class_desc->pop();
-			}
-
+			_add_method(methods[i], false);
 			class_desc->pop();
 
 			class_desc->add_newline();
@@ -1517,7 +1508,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 		}
 
 		if (brk_pos == bbcode.length())
-			break; //nothing else o add
+			break; //nothing else to add
 
 		int brk_end = bbcode.find("]", brk_pos + 1);
 
@@ -1713,10 +1704,6 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			pos = brk_pos + 1;
 		}
 	}
-
-	/*p_rt->pop();
-	p_rt->pop();
-	p_rt->pop();*/
 }
 
 void EditorHelp::_add_text(const String &p_bbcode) {
@@ -1741,8 +1728,7 @@ void EditorHelp::_notification(int p_what) {
 	switch (p_what) {
 
 		case NOTIFICATION_READY: {
-			//forward->set_icon(get_icon("Forward","EditorIcons"));
-			//back->set_icon(get_icon("Back","EditorIcons"));
+
 			_update_doc();
 
 		} break;
@@ -1815,7 +1801,6 @@ void EditorHelp::_bind_methods() {
 	ClassDB::bind_method("_class_list_select", &EditorHelp::_class_list_select);
 	ClassDB::bind_method("_class_desc_select", &EditorHelp::_class_desc_select);
 	ClassDB::bind_method("_class_desc_input", &EditorHelp::_class_desc_input);
-	//ClassDB::bind_method("_button_pressed",&EditorHelp::_button_pressed);
 	ClassDB::bind_method("_request_help", &EditorHelp::_request_help);
 	ClassDB::bind_method("_unhandled_key_input", &EditorHelp::_unhandled_key_input);
 	ClassDB::bind_method("_search", &EditorHelp::_search);
@@ -1827,21 +1812,16 @@ void EditorHelp::_bind_methods() {
 
 EditorHelp::EditorHelp() {
 
-	VBoxContainer *vbc = this;
+	set_custom_minimum_size(Size2(150 * EDSCALE, 0));
 
 	EDITOR_DEF("text_editor/help/sort_functions_alphabetically", true);
 
-	//class_list->connect("meta_clicked",this,"_class_list_select");
-	//class_list->set_selection_enabled(true);
-
-	{
-		class_desc = memnew(RichTextLabel);
-		vbc->add_child(class_desc);
-		class_desc->set_v_size_flags(SIZE_EXPAND_FILL);
-		class_desc->add_color_override("selection_color", get_color("text_editor/theme/selection_color", "Editor"));
-		class_desc->connect("meta_clicked", this, "_class_desc_select");
-		class_desc->connect("gui_input", this, "_class_desc_input");
-	}
+	class_desc = memnew(RichTextLabel);
+	add_child(class_desc);
+	class_desc->set_v_size_flags(SIZE_EXPAND_FILL);
+	class_desc->add_color_override("selection_color", get_color("text_editor/theme/selection_color", "Editor"));
+	class_desc->connect("meta_clicked", this, "_class_desc_select");
+	class_desc->connect("gui_input", this, "_class_desc_input");
 
 	class_desc->set_selection_enabled(true);
 
@@ -1861,12 +1841,6 @@ EditorHelp::EditorHelp() {
 	search_dialog->get_ok()->set_text(TTR("Find"));
 	search_dialog->connect("confirmed", this, "_search_cbk");
 	search_dialog->set_hide_on_ok(false);
-
-	/*class_search = memnew( EditorHelpSearch(editor) );
-	editor->get_gui_base()->add_child(class_search);
-	class_search->connect("go_to_help",this,"_help_callback");*/
-
-	//prev_search_page=-1;
 }
 
 EditorHelp::~EditorHelp() {
@@ -1884,9 +1858,9 @@ void EditorHelpBit::_go_to_help(String p_what) {
 void EditorHelpBit::_meta_clicked(String p_select) {
 
 	print_line("got meta " + p_select);
-	//print_line("LINK: "+p_select);
+
 	if (p_select.begins_with("$")) { //enum
-		//_goto_desc(p_select.substr(1,p_select.length()));
+
 		String select = p_select.substr(1, p_select.length());
 		String class_name;
 		if (select.find(".") != -1) {
@@ -1897,24 +1871,15 @@ void EditorHelpBit::_meta_clicked(String p_select) {
 		_go_to_help("class_enum:" + class_name + ":" + select);
 		return;
 	} else if (p_select.begins_with("#")) {
-		//_goto_desc(p_select.substr(1,p_select.length()));
+
 		_go_to_help("class_name:" + p_select.substr(1, p_select.length()));
 		return;
 	} else if (p_select.begins_with("@")) {
 
 		String m = p_select.substr(1, p_select.length());
 
-		if (m.find(".") != -1) {
-			//must go somewhere else
-
-			_go_to_help("class_method:" + m.get_slice(".", 0) + ":" + m.get_slice(".", 0));
-		} else {
-			/*
-			if (!method_line.has(m))
-				return;
-			class_desc->scroll_to_line(method_line[m]);
-			*/
-		}
+		if (m.find(".") != -1)
+			_go_to_help("class_method:" + m.get_slice(".", 0) + ":" + m.get_slice(".", 0)); //must go somewhere else
 	}
 }
 

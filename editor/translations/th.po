@@ -9,8 +9,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-11-08 07:49+0000\n"
-"Last-Translator: Poommetee Ketson <poommetee@protonmail.com>\n"
+"PO-Revision-Date: 2017-12-03 07:50+0000\n"
+"Last-Translator: Kaveeta Vivatchai <katviv@protonmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
 "Language: th\n"
@@ -29,8 +29,8 @@ msgstr "เลือกทั้งหมด"
 
 #: editor/animation_editor.cpp
 #, fuzzy
-msgid "Move Add Key"
-msgstr "เลื่อนหรือเพิ่มคีย์แอนิเมชัน"
+msgid "Anim Change Keyframe Time"
+msgstr "แก้ไขค่าแอนิเมชัน"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
@@ -41,7 +41,8 @@ msgid "Anim Change Transform"
 msgstr "เคลื่อนย้ายแอนิเมชัน"
 
 #: editor/animation_editor.cpp
-msgid "Anim Change Value"
+#, fuzzy
+msgid "Anim Change Keyframe Value"
 msgstr "แก้ไขค่าแอนิเมชัน"
 
 #: editor/animation_editor.cpp
@@ -245,7 +246,7 @@ msgstr "ซูมแอนิเมชัน"
 
 #: editor/animation_editor.cpp
 msgid "Length (s):"
-msgstr "ความยาว (วินาที):"
+msgstr "ความยาว (วิ):"
 
 #: editor/animation_editor.cpp
 msgid "Animation length (in seconds)."
@@ -253,7 +254,7 @@ msgstr "ความยาวแอนิเมชัน (วินาที)"
 
 #: editor/animation_editor.cpp
 msgid "Step (s):"
-msgstr "ช่วง (วินาที):"
+msgstr "ช่วง (วิ):"
 
 #: editor/animation_editor.cpp
 msgid "Cursor step snap (in seconds)."
@@ -533,8 +534,9 @@ msgid "Connecting Signal:"
 msgstr "เชื่อมโยงสัญญาณ:"
 
 #: editor/connections_dialog.cpp
-msgid "Create Subscription"
-msgstr "ลบการเชื่อมโยง"
+#, fuzzy
+msgid "Disconnect '%s' from '%s'"
+msgstr "เชื่อม '%s' กับ '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connect.."
@@ -550,7 +552,8 @@ msgid "Signals"
 msgstr "สัญญาณ"
 
 #: editor/create_dialog.cpp
-msgid "Create New"
+#, fuzzy
+msgid "Create New %s"
 msgstr "สร้างใหม่"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
@@ -565,7 +568,7 @@ msgstr "ล่าสุด:"
 #: editor/create_dialog.cpp editor/editor_node.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
-#: editor/quick_open.cpp editor/settings_config_dialog.cpp
+#: editor/quick_open.cpp
 msgid "Search:"
 msgstr "ค้นหา:"
 
@@ -606,6 +609,7 @@ msgstr ""
 "การแก้ไขจะไม่ส่งผลจนกว่าจะโหลดใหม่"
 
 #: editor/dependency_editor.cpp
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Dependencies"
 msgstr "การอ้างอิง"
 
@@ -708,21 +712,20 @@ msgid "Delete selected files?"
 msgstr "ลบไฟล์ที่เลือก?"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
-#: editor/editor_node.cpp editor/filesystem_dock.cpp
-#: editor/plugins/item_list_editor_plugin.cpp editor/project_export.cpp
-#: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
+#: editor/editor_file_dialog.cpp editor/editor_node.cpp
+#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/project_export.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_dock.cpp
 msgid "Delete"
 msgstr "ลบ"
 
 #: editor/dictionary_property_edit.cpp
-#, fuzzy
 msgid "Change Dictionary Key"
-msgstr "เปลี่ยนชื่อแอนิเมชัน:"
+msgstr "แก้ไขคีย์ดิกชันนารี"
 
 #: editor/dictionary_property_edit.cpp
-#, fuzzy
 msgid "Change Dictionary Value"
-msgstr "เปลี่ยนค่าในอาร์เรย์"
+msgstr "แก้ไขค่าดิกชันนารี"
 
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
@@ -847,11 +850,16 @@ msgstr "ลำโพง"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Effect"
-msgstr "เพิ่มเอฟเฟกต์"
+msgstr "เอฟเฟกต์"
 
 #: editor/editor_audio_buses.cpp
 msgid "Rename Audio Bus"
 msgstr "เปลี่ยนชื่อ Audio Bus"
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Change Audio Bus Volume"
+msgstr "สลับ Solo ของ Audio Bus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
@@ -883,7 +891,7 @@ msgstr "ลบเอฟเฟกต์เสียง"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio Bus, Drag and Drop to rearrange."
-msgstr "Audio Bus, ลากและวางเพื่อย้ายตำแหน่ง"
+msgstr "Audio Bus ลากและวางเพื่อย้ายตำแหน่ง"
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
@@ -901,8 +909,8 @@ msgstr "ข้าม"
 msgid "Bus options"
 msgstr "ตัวเลือก Bus"
 
-#: editor/editor_audio_buses.cpp editor/plugins/tile_map_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
+#: editor/plugins/tile_map_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr "ทำซ้ำ"
 
@@ -913,6 +921,10 @@ msgstr "รีเซ็ตระดับเสียง"
 #: editor/editor_audio_buses.cpp
 msgid "Delete Effect"
 msgstr "ลบเอฟเฟกต์"
+
+#: editor/editor_audio_buses.cpp
+msgid "Audio"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
@@ -956,7 +968,7 @@ msgstr "ไม่พบไฟล์ 'res://default_bus_layout.tres'"
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
-msgstr "ไฟล์ไม่ถูกต้อง, ไม่ใช่เลย์เอาต์ของ Audio Bus"
+msgstr "ไฟล์ไม่ถูกต้อง ไม่ใช่เลย์เอาต์ของ Audio Bus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -1065,17 +1077,14 @@ msgstr "ตำแหน่ง:"
 msgid "Node Name:"
 msgstr "ชื่อโหนด:"
 
-#: editor/editor_autoload_settings.cpp editor/project_manager.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_profiler.cpp
+#: editor/project_manager.cpp editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr "ชื่อ"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Singleton"
 msgstr "ซิงเกิลตัน"
-
-#: editor/editor_autoload_settings.cpp
-msgid "List:"
-msgstr "รายชื่อ:"
 
 #: editor/editor_data.cpp
 msgid "Updating Scene"
@@ -1088,6 +1097,15 @@ msgstr "เก็บการเปลี่ยนแปลงภายใน.."
 #: editor/editor_data.cpp
 msgid "Updating scene.."
 msgstr "อัพเดทฉาก.."
+
+#: editor/editor_data.cpp
+#, fuzzy
+msgid "[empty]"
+msgstr "(ว่างเปล่า)"
+
+#: editor/editor_data.cpp
+msgid "[unsaved]"
+msgstr ""
 
 #: editor/editor_dir_dialog.cpp
 msgid "Please select a base directory first"
@@ -1133,6 +1151,26 @@ msgstr "ไม่พบแม่แบบ:\n"
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File Exists, Overwrite?"
 msgstr "มีไฟล์นี้อยู่แล้ว จะเขียนทับหรือไม่?"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Select Current Folder"
+msgstr "เลือกโฟลเดอร์ปัจจุบัน"
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+msgid "Copy Path"
+msgstr "คัดลอกตำแหน่ง"
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+msgid "Show In File Manager"
+msgstr "แสดงในตัวจัดการไฟล์"
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+msgid "New Folder.."
+msgstr "สร้างโฟลเดอร์.."
+
+#: editor/editor_file_dialog.cpp
+msgid "Refresh"
+msgstr "รีเฟรช"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
@@ -1181,10 +1219,6 @@ msgid "Go Up"
 msgstr "ขึ้นบน"
 
 #: editor/editor_file_dialog.cpp
-msgid "Refresh"
-msgstr "รีเฟรช"
-
-#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr "เปิด/ปิดไฟล์ที่ซ่อน"
 
@@ -1208,7 +1242,7 @@ msgstr "เลื่อนโฟลเดอร์ที่ชอบขึ้น
 msgid "Move Favorite Down"
 msgstr "เลื่อนโฟลเดอร์ที่ชอบลง"
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder"
 msgstr "ไปยังโฟลเดอร์หลัก"
 
@@ -1231,11 +1265,11 @@ msgstr "นามสกุลไฟล์ไม่ถูกต้อง"
 
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
-msgstr ""
+msgstr "สแกนต้นฉบับ"
 
 #: editor/editor_file_system.cpp
 msgid "(Re)Importing Assets"
-msgstr "นำเข้าอีกครั้ง"
+msgstr "นำเข้าทรัพยากร(อีกครั้ง)"
 
 #: editor/editor_help.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -1252,7 +1286,7 @@ msgstr "ค้นหาคลาส"
 
 #: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
 msgid "Top"
-msgstr "บน"
+msgstr "บนสุด"
 
 #: editor/editor_help.cpp editor/property_editor.cpp
 msgid "Class:"
@@ -1360,7 +1394,8 @@ msgstr "ข้อความ:"
 
 #: editor/editor_log.cpp editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/property_editor.cpp editor/script_editor_debugger.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: modules/gdnative/gdnative_library_editor_plugin.cpp scene/gui/line_edit.cpp
+#: scene/gui/text_edit.cpp
 msgid "Clear"
 msgstr "ลบ"
 
@@ -1403,7 +1438,7 @@ msgstr "ไฟล์ '%s' ไม่สมบูรณ์"
 
 #: editor/editor_node.cpp
 msgid "Missing '%s' or its dependencies."
-msgstr "ไฟล์ที่ '%s' ใช้สูญหาย"
+msgstr "'%s' หรือการอ้างอิงสูญหาย"
 
 #: editor/editor_node.cpp
 msgid "Error while loading '%s'."
@@ -1501,14 +1536,21 @@ msgstr ""
 "อ่านรายละเอียดเพิ่มเติมได้จากคู่มือในส่วนของการนำเข้าฉาก"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "This is a remote object so changes to it will not be kept.\n"
 "Please read the documentation relevant to debugging to better understand "
 "this workflow."
 msgstr ""
-"รีซอร์สนี้เป็นของฉากที่ถูกนำเข้า จึงไม่สามารถแก้ไขได้\n"
-"อ่านรายละเอียดเพิ่มเติมได้จากคู่มือในส่วนของการนำเข้าฉาก"
+"วัตถุนี้เป็นวัตถุรีโมท การแก้ไขจะไม่ถูกบันทึก\n"
+"อ่านรายละเอียดเพิ่มเติมได้จากคู่มือในส่วนของการแก้ไขจุดบกพร่อง"
+
+#: editor/editor_node.cpp
+msgid "Expand all properties"
+msgstr "ขยายคุณสมบัติทั้งหมด"
+
+#: editor/editor_node.cpp
+msgid "Collapse all properties"
+msgstr "ยุบคุณสมบัติทั้งหมด"
 
 #: editor/editor_node.cpp
 msgid "Copy Params"
@@ -1626,9 +1668,8 @@ msgid "Export Mesh Library"
 msgstr "ส่งออก Mesh Library"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "This operation can't be done without a root node."
-msgstr "ทำไม่ได้ถ้าไม่ได้เลือกโหนด"
+msgstr "ทำไม่ได้ถ้าไม่มีโหนดราก"
 
 #: editor/editor_node.cpp
 msgid "Export Tile Set"
@@ -1761,23 +1802,20 @@ msgid "Switch Scene Tab"
 msgstr "สลับฉาก"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "%d more files or folders"
 msgstr "และอีก %d ไฟล์หรือโฟลเดอร์"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "%d more folders"
-msgstr "และอีก %d ไฟล์"
+msgstr "และอีก %d โฟลเดอร์"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "%d more files"
 msgstr "และอีก %d ไฟล์"
 
 #: editor/editor_node.cpp
 msgid "Dock Position"
-msgstr ""
+msgstr "ตำแหน่งแผง"
 
 #: editor/editor_node.cpp
 msgid "Distraction Free Mode"
@@ -1788,9 +1826,8 @@ msgid "Toggle distraction-free mode."
 msgstr "โหมดไร้สิ่งรบกวน"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Add a new scene."
-msgstr "เพิ่มแทร็กใหม่"
+msgstr "เพิ่มฉากใหม่"
 
 #: editor/editor_node.cpp
 msgid "Scene"
@@ -2127,12 +2164,12 @@ msgid "Import"
 msgstr "นำเข้า"
 
 #: editor/editor_node.cpp
-msgid "FileSystem"
-msgstr "ระบบไฟล์"
-
-#: editor/editor_node.cpp editor/node_dock.cpp
 msgid "Node"
 msgstr "โหนด"
+
+#: editor/editor_node.cpp
+msgid "FileSystem"
+msgstr "ระบบไฟล์"
 
 #: editor/editor_node.cpp
 msgid "Output"
@@ -2167,9 +2204,8 @@ msgid "Open & Run a Script"
 msgstr "เปิดและรันสคริปต์"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "New Inherited"
-msgstr "สืบทอดฉากใหม่.."
+msgstr "สืบทอด"
 
 #: editor/editor_node.cpp
 msgid "Load Errors"
@@ -2191,7 +2227,7 @@ msgstr "เปิดตัวแก้ไข 3 มิติ"
 msgid "Open Script Editor"
 msgstr "เปิดตัวแก้ไขสคริปต์"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
 msgid "Open Asset Library"
 msgstr "เปิดแหล่งรวมทรัพยากร"
 
@@ -2266,15 +2302,25 @@ msgstr "เวลา:"
 
 #: editor/editor_profiler.cpp
 msgid "Inclusive"
-msgstr ""
+msgstr "รวม"
 
 #: editor/editor_profiler.cpp
 msgid "Self"
-msgstr ""
+msgstr "ตัวเอง"
 
 #: editor/editor_profiler.cpp
 msgid "Frame #:"
 msgstr "เฟรมที่:"
+
+#: editor/editor_profiler.cpp
+#, fuzzy
+msgid "Time"
+msgstr "เวลา:"
+
+#: editor/editor_profiler.cpp
+#, fuzzy
+msgid "Calls"
+msgstr "เรียก"
 
 #: editor/editor_run_native.cpp
 msgid "Select device from the list"
@@ -2353,9 +2399,8 @@ msgid "(Current)"
 msgstr "(ปัจจุบัน)"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Retrieving mirrors, please wait.."
-msgstr "เชื่อมต่อไม่ได้ กรุณาลองใหม่"
+msgstr "กำลังเรียกข้อมูล โปรดรอ.."
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
@@ -2395,7 +2440,7 @@ msgstr "นำเข้า:"
 msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
-msgstr ""
+msgstr "ไม่พบลิงก์ดาวน์โหลดสำหรับรุ่นนี้ มีเฉพาะสำหรับโปรแกรมรุ่นหลัก"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2414,7 +2459,8 @@ msgstr "ไม่มีการตอบกลับ"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Req. Failed."
+#, fuzzy
+msgid "Request Failed."
 msgstr "ร้องขอผิดพลาด"
 
 #: editor/export_template_manager.cpp
@@ -2428,37 +2474,30 @@ msgid "Failed:"
 msgstr "ผิดพลาด:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't write file."
-msgstr "เขียนไฟล์ไม่ได้:\n"
+msgstr "เขียนไฟล์ไม่ได้"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Download Complete."
-msgstr "ดาวน์โหลดผิดพลาด"
+msgstr "ดาวน์โหลดเสร็จสิ้น"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error requesting url: "
-msgstr "ผิดพลาดขณะบันทึก atlas:"
+msgstr "ผิดพลาดขณะร้องขอที่อยู่: "
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Connecting to Mirror.."
 msgstr "กำลังเชื่อมต่อ.."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Disconnected"
-msgstr "ลบการเชื่อมโยง"
+msgstr "การเชื่อมต่อสิ้นสุด"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Resolving"
 msgstr "กำลังค้นหา.."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't Resolve"
 msgstr "ค้นหาไม่สำเร็จ"
 
@@ -2469,13 +2508,12 @@ msgstr "กำลังเชื่อมต่อ.."
 
 #: editor/export_template_manager.cpp
 #, fuzzy
-msgid "Can't Conect"
+msgid "Can't Connect"
 msgstr "เชื่อมต่อไม่ได้"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Connected"
-msgstr "เชื่อม"
+msgstr "เชื่อมต่อแล้ว"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2483,19 +2521,16 @@ msgid "Requesting.."
 msgstr "กำลังร้องขอ.."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Downloading"
-msgstr "ดาวน์โหลด"
+msgstr "กำลังดาวน์โหลด"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Connection Error"
-msgstr "กำลังเชื่อมต่อ.."
+msgstr "เชื่อมต่อผิดพลาด"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "SSL Handshake Error"
-msgstr "โหลดผิดพลาด"
+msgstr "การรับรองความปลอดภัยผิดพลาด"
 
 #: editor/export_template_manager.cpp
 msgid "Current Version:"
@@ -2522,14 +2557,12 @@ msgid "Export Template Manager"
 msgstr "จัดการแม่แบบส่งออก"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Download Templates"
-msgstr "แม่แบบ"
+msgstr "ดาวน์โหลดแม่แบบ"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Select mirror from list: "
-msgstr "เลือกอุปกรณ์จากรายชื่อ"
+msgstr "เลือกลิงก์ดาวน์โหลด: "
 
 #: editor/file_type_cache.cpp
 msgid "Can't open file_type_cache.cch for writing, not saving file type cache!"
@@ -2537,7 +2570,7 @@ msgstr "เปิดไฟล์ file_type_cache.cch เพื่อเขีย
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot navigate to '%s' as it has not been found in the file system!"
-msgstr ""
+msgstr "ไม่สามารถไปยัง '%s' เนื่องจากไม่พบในระบบ!"
 
 #: editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails"
@@ -2566,6 +2599,11 @@ msgstr "ย้ายโฟลเดอร์มาข้างในตัวม
 #: editor/filesystem_dock.cpp
 msgid "Error moving:\n"
 msgstr "ผิดพลาดขณะย้าย:\n"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Error duplicating:\n"
+msgstr "ผิดพลาดขณะโหลด:"
 
 #: editor/filesystem_dock.cpp
 msgid "Unable to update dependencies:\n"
@@ -2600,16 +2638,22 @@ msgid "Renaming folder:"
 msgstr "เปลี่ยนชื่อโฟลเดอร์:"
 
 #: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Duplicating file:"
+msgstr "ทำซ้ำ"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Duplicating folder:"
+msgstr "เปลี่ยนชื่อโฟลเดอร์:"
+
+#: editor/filesystem_dock.cpp
 msgid "Expand all"
 msgstr "ขยายโฟลเดอร์"
 
 #: editor/filesystem_dock.cpp
 msgid "Collapse all"
 msgstr "ยุบโฟลเดอร์"
-
-#: editor/filesystem_dock.cpp
-msgid "Copy Path"
-msgstr "คัดลอกตำแหน่ง"
 
 #: editor/filesystem_dock.cpp
 msgid "Rename.."
@@ -2620,12 +2664,9 @@ msgid "Move To.."
 msgstr "ย้ายไป.."
 
 #: editor/filesystem_dock.cpp
-msgid "New Folder.."
-msgstr "สร้างโฟลเดอร์.."
-
-#: editor/filesystem_dock.cpp
-msgid "Show In File Manager"
-msgstr "แสดงในตัวจัดการไฟล์"
+#, fuzzy
+msgid "Open Scene(s)"
+msgstr "เปิดไฟล์ฉาก"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
@@ -2638,6 +2679,11 @@ msgstr "แก้ไขการอ้างอิง.."
 #: editor/filesystem_dock.cpp
 msgid "View Owners.."
 msgstr "ดูเจ้าของ.."
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Duplicate.."
+msgstr "ทำซ้ำ"
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2734,6 +2780,16 @@ msgid "Importing Scene.."
 msgstr "กำลังนำเข้าฉาก.."
 
 #: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Generating Lightmaps"
+msgstr "ส่งผ่านไปยัง Lightmaps:"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Generating for Mesh: "
+msgstr "สร้างเส้นกรอบ"
+
+#: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script.."
 msgstr "กำลังรันสคริปต์.."
 
@@ -2815,9 +2871,8 @@ msgid "Remove Poly And Point"
 msgstr "ลบรูปหลายเหลี่ยมและจุด"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid "Create a new polygon from scratch"
-msgstr "สร้างรูปหลายเหลี่ยมจากความว่างเปล่า"
+msgstr "สร้างรูปหลายเหลี่ยมใหม่ตั้งแต่ต้น"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid ""
@@ -2832,7 +2887,6 @@ msgstr ""
 "เมาส์ขวา: ลบจุด"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid "Delete points"
 msgstr "ลบจุด"
 
@@ -2881,11 +2935,11 @@ msgstr "เพิ่มแอนิเมชัน"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Next Changed"
-msgstr ""
+msgstr "แก้ไขการผสานไปข้างหน้า"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Blend Time"
-msgstr ""
+msgstr "แก้ไขระยะเวลาการผสาน"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
@@ -2969,7 +3023,7 @@ msgstr "เล่นอัตโนมัติเมื่อโหลด"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Edit Target Blend Times"
-msgstr ""
+msgstr "แก้ไขระยะเวลาการผสานไปยังเป้าหมาย"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Tools"
@@ -2978,6 +3032,54 @@ msgstr "เครื่องมือแอนิเมชัน"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Copy Animation"
 msgstr "คัดลอกแอนิเมชัน"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Onion Skinning"
+msgstr "ภาพเงาการเคลื่อนไหว"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Enable Onion Skinning"
+msgstr "เปิดภาพเงาการเคลื่อนไหว"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Directions"
+msgstr "ทิศทาง"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Past"
+msgstr "อดีต"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Future"
+msgstr "อนาคต"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Depth"
+msgstr "ความลึก"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "1 step"
+msgstr "1 ระดับ"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "2 steps"
+msgstr "2 ระดับ"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "3 steps"
+msgstr "3 ระดับ"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Differences Only"
+msgstr "เฉพาะที่แตกต่าง"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Force White Modulate"
+msgstr "บังคับระดับสีขาว"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Include Gizmos (3D)"
+msgstr "รวมสัญลักษณ์ (3D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
@@ -2996,15 +3098,15 @@ msgstr "ผิดพลาด!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Times:"
-msgstr ""
+msgstr "ระยะเวลาผสาน:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Next (Auto Queue):"
-msgstr ""
+msgstr "ถัดไป (คิวอัตโนมัติ):"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Cross-Animation Blend Times"
-msgstr ""
+msgstr "ระยะเวลาการผสาน Cross-Animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -3037,7 +3139,6 @@ msgid "Blend"
 msgstr "ผสม"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Mix"
 msgstr "ร่วม"
 
@@ -3047,11 +3148,11 @@ msgstr "เริ่มใหม่อัตโนมัติ:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Restart (s):"
-msgstr ""
+msgstr "เริ่มใหม่ (วิ):"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Random Restart (s):"
-msgstr ""
+msgstr "สุ่มเริ่มใหม่ (วิ):"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Start!"
@@ -3076,7 +3177,7 @@ msgstr "ผสม 1:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "X-Fade Time (s):"
-msgstr "ระยะเวลาเฟด (วินาที):"
+msgstr "ระยะเวลาเฟด (วิ):"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Current:"
@@ -3088,11 +3189,11 @@ msgstr "เพิ่มอินพุต"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Clear Auto-Advance"
-msgstr ""
+msgstr "ลบ Auto-Advance"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Set Auto-Advance"
-msgstr ""
+msgstr "ตั้ง Auto-Advance"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Delete Input"
@@ -3208,7 +3309,7 @@ msgstr "ผิดพลาดในการตรวจสอบแฮช SHA25
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
-msgstr "การดาวน์โหลดผิดพลาด:"
+msgstr "ดาวน์โหลดทรัพยากรผิดพลาด:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Fetching:"
@@ -3255,6 +3356,7 @@ msgid "last"
 msgstr "ท้ายสุด"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "ทั้งหมด"
 
@@ -3296,6 +3398,28 @@ msgstr "ทดสอบ"
 msgid "Assets ZIP File"
 msgstr "ไฟล์ ZIP"
 
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Can't determine a save path for lightmap images.\n"
+"Save your scene (for images to be saved in the same dir), or pick a save "
+"path from the BakedLightmap properties."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
+"Light' flag is on."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed creating lightmap images, make sure path is writable."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid "Bake Lightmaps"
+msgstr "ส่งผ่านไปยัง Lightmaps:"
+
 #: editor/plugins/camera_editor_plugin.cpp
 msgid "Preview"
 msgstr "ตัวอย่าง"
@@ -3328,40 +3452,35 @@ msgstr "ย้ายจุดหมุน"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move Action"
-msgstr ""
+msgstr "เคลื่อนย้าย"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move vertical guide"
-msgstr ""
+msgstr "เลื่อนเส้นนำแนวตั้ง"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Create new vertical guide"
-msgstr "สร้างสคริปต์ใหม่"
+msgstr "สร้างเส้นนำแนวตั้ง"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Remove vertical guide"
-msgstr "ลบตัวแปร"
+msgstr "ลบเส้นนำแนวตั้ง"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move horizontal guide"
-msgstr "ย้ายจุดในเส้นโค้ง"
+msgstr "เลื่อนเส้นนำแนวนอน"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Create new horizontal guide"
-msgstr "สร้างสคริปต์ใหม่"
+msgstr "สร้างเส้นนำแนวนอน"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Remove horizontal guide"
-msgstr "ลบคีย์ที่ผิดพลาด"
+msgstr "ลบเส้นนำแนวนอน"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create new horizontal and vertical guides"
-msgstr ""
+msgstr "สร้างเส้นนำแนวตั้งและแนวนอน"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Edit IK Chain"
@@ -3437,7 +3556,6 @@ msgid "Toggles snapping"
 msgstr "เปิด/ปิด การจำกัด"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Snap"
 msgstr "จำกัดการเคลื่อนย้าย"
 
@@ -3486,9 +3604,8 @@ msgid "Snap to other nodes"
 msgstr "จำกัดด้วยโหนดอื่น"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to guides"
-msgstr "จำกัดด้วยเส้นตาราง"
+msgstr "จำกัดด้วยเส้นนำ"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -3547,9 +3664,8 @@ msgid "Show rulers"
 msgstr "แสดงไม้บรรทัด"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show guides"
-msgstr "แสดงไม้บรรทัด"
+msgstr "แสดงเส้นนำ"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -3585,7 +3701,7 @@ msgstr "ลบท่าทาง"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag pivot from mouse position"
-msgstr ""
+msgstr "เลื่อนจุดหมุนจากตำแหน่งเมาส์"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Set pivot at mouse position"
@@ -3593,11 +3709,11 @@ msgstr "กำหนดจุดหมุนที่ตำแหน่งเม
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Multiply grid step by 2"
-msgstr ""
+msgstr "เพิ่มความถี่เส้นตารางขึ้น 2 เท่า"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Divide grid step by 2"
-msgstr ""
+msgstr "ลดความถี่เส้นตารางลงครึ่งหนึ่ง"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Add %s"
@@ -3616,16 +3732,6 @@ msgstr "สร้างโหนด"
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
 msgstr "ผิดพลาดขณะอินสแตนซ์ฉากจาก %s"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "OK :("
-msgstr "ตกลง :("
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "No parent to instance a child at."
-msgstr "ไม่พบโหนดแม่ที่จะรับอินสแตนซ์โหนดลูก"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -3732,7 +3838,7 @@ msgstr "ลบจุดบนเส้นโค้ง"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Toggle Curve Linear Tangent"
-msgstr ""
+msgstr "เปิด/ปิดเส้นสัมผัสแนวโค้ง"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Hold Shift to edit tangents individually"
@@ -3740,7 +3846,7 @@ msgstr "กด Shift ค้างเพื่อปรับเส้นสั�
 
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
-msgstr ""
+msgstr "สร้าง GI Probe"
 
 #: editor/plugins/gradient_editor_plugin.cpp
 msgid "Add/Remove Color Ramp Point"
@@ -3824,6 +3930,22 @@ msgid "Create Navigation Mesh"
 msgstr "สร้าง Mesh นำทาง"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Contained Mesh is not of type ArrayMesh."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Unwrap failed, mesh may not be manifold?"
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "No mesh to debug."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Model has no UV in this layer"
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
 msgstr "MeshInstance ไม่มี Mesh!"
 
@@ -3862,6 +3984,20 @@ msgstr "สร้างรูปทรงตันกายภาพเป็น
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh.."
 msgstr "สร้างเส้นขอบ Mesh.."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "View UV1"
+msgstr "มุมมอง"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "View UV2"
+msgstr "มุมมอง"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Unwrap UV2 for Lightmap/AO"
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh"
@@ -3909,11 +4045,11 @@ msgstr "พื้นผิวต้นฉบับไม่ถูกต้อง
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Parent has no solid faces to populate."
-msgstr ""
+msgstr "โหนดแม่ไม่มีพื้นผิวเพื่อสร้าง"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Couldn't map area."
-msgstr ""
+msgstr "ไม่สามารถวางพื้นที่"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Select a Source Mesh:"
@@ -3925,11 +4061,11 @@ msgstr "เลือกพื้นผิวปลายทาง:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Populate Surface"
-msgstr ""
+msgstr "สร้างพื้นผิว"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Populate MultiMesh"
-msgstr ""
+msgstr "สร้าง MultiMesh"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Target Surface:"
@@ -3969,11 +4105,11 @@ msgstr "สุ่มขนาด:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Populate"
-msgstr ""
+msgstr "สร้าง"
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
 msgid "Bake!"
-msgstr ""
+msgstr "สร้าง!"
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
 msgid "Bake the navigation mesh.\n"
@@ -3985,11 +4121,11 @@ msgstr "ล้าง Mesh นำทาง"
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Setting up Configuration..."
-msgstr ""
+msgstr "กำลังจัดการโครงร่าง..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Calculating grid size..."
-msgstr ""
+msgstr "กำลังคำนวณขนาดตาราง..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Creating heightfield..."
@@ -4001,7 +4137,7 @@ msgstr "กำลังกำหนดพื้นผิวที่เดิน
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Constructing compact heightfield..."
-msgstr ""
+msgstr "กำลังบีบอัดสนามความสูง..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Eroding walkable area..."
@@ -4025,7 +4161,7 @@ msgstr "กำลังแปลงกลับเป็น Mesh นำทาง
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Navigation Mesh Generator Setup:"
-msgstr ""
+msgstr "การตั้งค่าการสร้างพื้นผิวนำทาง:"
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Parsing Geometry..."
@@ -4033,25 +4169,20 @@ msgstr "วิเคราะห์พื้นผิว..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Done!"
-msgstr ""
+msgstr "เสร็จสิ้น!"
 
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
 msgid "Create Navigation Polygon"
 msgstr "สร้างรูปทรงนำทาง"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Clear Emission Mask"
-msgstr "ลบ Mask การปล่อย"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Generating AABB"
 msgstr "สร้างเส้นกรอบ"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
-msgstr ""
+msgstr "สามารถกำหนดจุดให้แก่ ParticlesMaterial เท่านั้น"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Error loading image:"
@@ -4062,16 +4193,16 @@ msgid "No pixels with transparency > 128 in image.."
 msgstr "รูปไม่มีพิกเซลใดที่ความโปร่งแสง > 128 .."
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Set Emission Mask"
-msgstr "กำหนด Mask การปะทุ"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generate Visibility Rect"
 msgstr "สร้างกรอบการมองเห็น"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
 msgstr "โหลด Mask การปะทุ"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Clear Emission Mask"
+msgstr "ลบ Mask การปล่อย"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -4109,7 +4240,7 @@ msgstr "โหนดไม่มี geometry (หน้า)"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "A processor material of type 'ParticlesMaterial' is required."
-msgstr "ต้องการ Material ประเภท 'ParticlesMaterial'"
+msgstr "ต้องการวัสดุประเภท 'ParticlesMaterial'"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
@@ -4120,7 +4251,6 @@ msgid "No faces!"
 msgstr "ไม่มีหน้า!"
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Generate AABB"
 msgstr "สร้างเส้นกรอบ"
 
@@ -4131,10 +4261,6 @@ msgstr "สร้างจุดปะทุจาก Mesh"
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emission Points From Node"
 msgstr "สร้างจุดปะทุจากโหนด"
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Clear Emitter"
-msgstr "ลบตัวปะทุ"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emitter"
@@ -4161,9 +4287,8 @@ msgid "Emission Source: "
 msgstr "แหล่งปะทุ: "
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Generate Visibility AABB"
-msgstr "สร้างกรอบการมองเห็น"
+msgstr "สร้างเส้นกรอบการมองเห็น"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -4243,17 +4368,14 @@ msgid "Curve Point #"
 msgstr "จุดเส้นโค้ง #"
 
 #: editor/plugins/path_editor_plugin.cpp
-#, fuzzy
 msgid "Set Curve Point Position"
 msgstr "กำหนดพิกัดจุดเส้นโค้ง"
 
 #: editor/plugins/path_editor_plugin.cpp
-#, fuzzy
 msgid "Set Curve In Position"
 msgstr "กำหนดเส้นโค้งขาเข้า"
 
 #: editor/plugins/path_editor_plugin.cpp
-#, fuzzy
 msgid "Set Curve Out Position"
 msgstr "กำหนดเส้นโค้งขาออก"
 
@@ -4420,17 +4542,18 @@ msgid " Class Reference"
 msgstr " ตำราอ้างอิงคลาส"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Sort"
-msgstr "เรียงตาม:"
+msgstr "เรียง"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Move Up"
 msgstr "ย้ายขึ้น"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Move Down"
 msgstr "ย้ายลง"
 
@@ -4446,7 +4569,7 @@ msgstr "สคริปต์ก่อนหน้า"
 msgid "File"
 msgstr "ไฟล์"
 
-#: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
+#: editor/plugins/script_editor_plugin.cpp
 msgid "New"
 msgstr "ไฟล์ใหม่"
 
@@ -4457,6 +4580,11 @@ msgstr "บันทึกทั้งหมด"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Soft Reload Script"
 msgstr "โหลดสคริปต์ใหม่"
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Copy Script Path"
+msgstr "คัดลอกตำแหน่ง"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "History Prev"
@@ -4488,7 +4616,7 @@ msgstr "ปิดทั้งหมด"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close Other Tabs"
-msgstr ""
+msgstr "ปิดแท็บอื่น"
 
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 msgid "Run"
@@ -4648,20 +4776,16 @@ msgstr "คัดลอกบรรทัดลงมา"
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
-msgid "Fold Line"
-msgstr "ไปยังบรรทัด"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Unfold Line"
-msgstr ""
+msgid "Fold/Unfold Line"
+msgstr "แสดง"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold All Lines"
-msgstr ""
+msgstr "ซ่อนทั้งหมด"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Unfold All Lines"
-msgstr ""
+msgstr "แสดงทั้งหมด"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Complete Symbol"
@@ -4734,7 +4858,7 @@ msgstr "Shader"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Scalar Constant"
-msgstr "แก้ไขค่าคงที่"
+msgstr "แก้ไขค่าคงที่สเกลาร์"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Vec Constant"
@@ -4746,27 +4870,27 @@ msgstr "แก้ไขค่าคงที่สี"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Scalar Operator"
-msgstr ""
+msgstr "แก้ไขเครื่องหมายสเกลาร์"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Vec Operator"
-msgstr ""
+msgstr "แก้ไขเครื่องหมายเวกเตอร์"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Vec Scalar Operator"
-msgstr ""
+msgstr "แก้ไขเครื่องหมายเวกเตอร์สเกลาร์"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change RGB Operator"
-msgstr ""
+msgstr "แก้ไขเครื่องหมาย RGB"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Toggle Rot Only"
-msgstr ""
+msgstr "สลับเฉพาะการหมุน"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Scalar Function"
-msgstr "แก้ไขฟังก์ชัน Scalar"
+msgstr "แก้ไขฟังก์ชันสเกลาร์"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Vec Function"
@@ -4774,15 +4898,15 @@ msgstr "แก้ไขฟังก์ชันเวกเตอร์"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Scalar Uniform"
-msgstr ""
+msgstr "แก้ไขสเกลาร์ Uniform"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Vec Uniform"
-msgstr ""
+msgstr "แก้ไขเวกเตอร์ Uniform"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change RGB Uniform"
-msgstr ""
+msgstr "แก้ไข RGB Uniform"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Default Value"
@@ -4790,15 +4914,15 @@ msgstr "แก้ไขค่าปริยาย"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change XForm Uniform"
-msgstr ""
+msgstr "แก้ไข XForm Uniform"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Texture Uniform"
-msgstr ""
+msgstr "แก้ไข Texture Uniform"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Cubemap Uniform"
-msgstr ""
+msgstr "แก้ไข Cubemap Uniform"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Comment"
@@ -4809,12 +4933,10 @@ msgid "Add/Remove to Color Ramp"
 msgstr "เพิ่ม/ลบในการไล่สี"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
-#, fuzzy
 msgid "Add/Remove to Curve Map"
 msgstr "เพิ่ม/ลบในเส้นโค้ง"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
-#, fuzzy
 msgid "Modify Curve Map"
 msgstr "แก้ไขเส้นโค้ง"
 
@@ -4884,17 +5006,15 @@ msgstr "ย้ายตามแกน Z"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Plane Transform."
-msgstr ""
+msgstr "ดูระนาบการย้าย"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Scaling: "
-msgstr "อัตราส่วน:"
+msgstr "อัตราส่วน: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Translating: "
-msgstr "การแปล:"
+msgstr "การเลื่อน: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotating %s degrees."
@@ -4978,11 +5098,19 @@ msgstr "มุมรูปทรง"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "FPS"
-msgstr ""
+msgstr "เฟรมต่อวินาที"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Align with view"
 msgstr "ย้ายมาที่กล้อง"
+
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "OK :("
+msgstr "ตกลง :("
+
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "No parent to instance a child at."
+msgstr "ไม่พบโหนดแม่ที่จะรับอินสแตนซ์โหนดลูก"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
@@ -5013,14 +5141,12 @@ msgid "View Information"
 msgstr "แสดงข้อมูล"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "View FPS"
-msgstr "ดูไฟล์"
+msgstr "แสดงอัตราเฟรม/วินาที"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Half Resolution"
-msgstr "ปรับอัตราส่วนเวลาคีย์ที่เลือก"
+msgstr "ความละเอียดครื่งหนึ่ง"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Audio Listener"
@@ -5056,7 +5182,7 @@ msgstr "มุมมองอิสระ ลง"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Speed Modifier"
-msgstr "มุมมองอิสระ ปรับความเร็ว"
+msgstr "ปรับความเร็วมุมมองอิสระ"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "preview"
@@ -5091,6 +5217,20 @@ msgstr "โหมดหมุน (E)"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode (R)"
 msgstr "โหมดปรับขนาด (R)"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Local Coords"
+msgstr "พิกัดภายใน"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Local Space Mode (%s)"
+msgstr "โหมดปรับขนาด (R)"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Snap Mode (%s)"
+msgstr "โหมดการจำกัด:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -5153,9 +5293,8 @@ msgid "Tool Scale"
 msgstr "เครื่องมือปรับขนาด"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Freelook"
-msgstr "สลับเต็มจอ"
+msgstr "เปิด/ปิดมุมมองอิสระ"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform"
@@ -5164,10 +5303,6 @@ msgstr "เคลื่อนย้าย"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Configure Snap.."
 msgstr "ตั้งค่าการจำกัด.."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Local Coords"
-msgstr "พิกัดภายใน"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog.."
@@ -5209,6 +5344,10 @@ msgstr "แสดงเส้นตาราง"
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Settings"
 msgstr "ตัวเลือก"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Skeleton Gizmo visibility"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
@@ -5308,7 +5447,7 @@ msgstr "แอนิเมชัน"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed (FPS):"
-msgstr "ความเร็ว (เฟรมต่อวินาที):"
+msgstr "ความเร็ว (เฟรม/วินาที):"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Loop"
@@ -5339,9 +5478,8 @@ msgid "StyleBox Preview:"
 msgstr "ตัวอย่าง StyleBox:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Set Region Rect"
-msgstr "ขอบเขต Texture"
+msgstr "กำหนดขอบเขต Texture"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
@@ -5430,12 +5568,11 @@ msgstr "สร้างแม่แบบเปล่า"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Create Empty Editor Template"
-msgstr "สร้างแม่แบบเปล่า"
+msgstr "สร้างแม่แบบเปล่าสำหรับ Editor"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Create From Current Editor Theme"
-msgstr "สร้างแม่แบบเปล่า"
+msgstr "สร้างจากธีมปัจจุบัน"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "CheckBox Radio1"
@@ -5544,7 +5681,7 @@ msgstr "ค้นหา tile"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Transpose"
-msgstr ""
+msgstr "สลับเปลี่ยน"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Mirror X"
@@ -5595,6 +5732,11 @@ msgid "Merge from scene?"
 msgstr "รวมจากฉาก?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Tile Set"
+msgstr "TileSet.."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from Scene"
 msgstr "สร้างจากฉาก"
 
@@ -5606,14 +5748,17 @@ msgstr "รวมจากฉาก"
 msgid "Error"
 msgstr "ผิดพลาด"
 
+#: editor/progress_dialog.cpp scene/gui/dialogs.cpp
+msgid "Cancel"
+msgstr "ยกเลิก"
+
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "รันได้"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Delete patch '%s' from list?"
-msgstr "ลบแพตช์ '"
+msgstr "ลบแพตช์ '%s' จากรายชื่อ?"
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
@@ -5702,7 +5847,6 @@ msgid "Export With Debug"
 msgstr "ส่งออกพร้อมการแก้ไขจุดบกพร่อง"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "The path does not exist."
 msgstr "ไม่พบไฟล์"
 
@@ -5723,10 +5867,6 @@ msgstr "กรุณาเลือกโฟลเดอร์ที่ไม่
 #: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr "นำเข้าโปรเจกต์แล้ว"
-
-#: editor/project_manager.cpp
-msgid " "
-msgstr " "
 
 #: editor/project_manager.cpp
 msgid "It would be a good idea to name your project."
@@ -5879,6 +6019,14 @@ msgstr "เริ่มใหม่ทันที"
 msgid "Can't run project"
 msgstr "ไม่สามารถรันโปรเจกต์"
 
+#: editor/project_manager.cpp
+msgid ""
+"You don't currently have any projects.\n"
+"Would you like to explore the official example projects in the Asset Library?"
+msgstr ""
+"คุณยังไม่มีโปรเจกต์ใดๆ\n"
+"ต้องการสำรวจโปรเจกต์ตัวอย่างในแหล่งรวมทรัพยากรหรือไม่?"
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr "ปุ่ม "
@@ -5985,8 +6133,9 @@ msgid "Joypad Button Index:"
 msgstr "ปุ่มจอย:"
 
 #: editor/project_settings_editor.cpp
-msgid "Add Input Action"
-msgstr "เพิ่มการกระทำ"
+#, fuzzy
+msgid "Erase Input Action"
+msgstr "ลบการกระทำ"
 
 #: editor/project_settings_editor.cpp
 msgid "Erase Input Action Event"
@@ -6033,13 +6182,12 @@ msgid "Select a setting item first!"
 msgstr "กรุณาเลือกตัวเลือกก่อน!"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "No property '%s' exists."
-msgstr "ไม่พบคุณสมบัติ '"
+msgstr "ไม่พบคุณสมบัติ '%s'"
 
 #: editor/project_settings_editor.cpp
 msgid "Setting '%s' is internal, and it can't be deleted."
-msgstr ""
+msgstr "ตัวเลือก '%s' เป็นค่าภายในไม่สามารถลบได้"
 
 #: editor/project_settings_editor.cpp
 msgid "Delete Item"
@@ -6052,6 +6200,10 @@ msgstr "ต้องไม่มี '/' หรือ ':'"
 #: editor/project_settings_editor.cpp
 msgid "Already existing"
 msgstr "มีอยู่ก่อนแล้ว"
+
+#: editor/project_settings_editor.cpp
+msgid "Add Input Action"
+msgstr "เพิ่มการกระทำ"
 
 #: editor/project_settings_editor.cpp
 msgid "Error saving settings."
@@ -6230,6 +6382,10 @@ msgid "New Script"
 msgstr "สคริปต์ใหม่"
 
 #: editor/property_editor.cpp
+msgid "New %s"
+msgstr ""
+
+#: editor/property_editor.cpp
 msgid "Make Unique"
 msgstr "ไม่ใช้ร่วมกับวัตถุอื่น"
 
@@ -6261,6 +6417,11 @@ msgstr "บิต %d, ค่า %d"
 msgid "On"
 msgstr "เปิด"
 
+#: editor/property_editor.cpp
+#, fuzzy
+msgid "[Empty]"
+msgstr "เพิ่มแบบว่างเปล่า"
+
 #: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Set"
 msgstr "กำหนด"
@@ -6268,10 +6429,6 @@ msgstr "กำหนด"
 #: editor/property_editor.cpp
 msgid "Properties:"
 msgstr "คุณสมบัติ:"
-
-#: editor/property_editor.cpp
-msgid "Sections:"
-msgstr "หัวข้อ:"
 
 #: editor/property_selector.cpp
 msgid "Select Property"
@@ -6303,7 +6460,7 @@ msgstr "เลือกโหนดแม่ใหม่:"
 
 #: editor/reparent_dialog.cpp
 msgid "Keep Global Transform"
-msgstr ""
+msgstr "เก็บ Global Transform"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent"
@@ -6311,7 +6468,7 @@ msgstr "เลือกโหนดแม่ใหม่"
 
 #: editor/run_settings_dialog.cpp
 msgid "Run Mode:"
-msgstr ""
+msgstr "โหมดการทำงาน:"
 
 #: editor/run_settings_dialog.cpp
 msgid "Current Scene"
@@ -6505,14 +6662,12 @@ msgid "Clear a script for the selected node."
 msgstr "ลบสคริปต์ของโหนดที่เลือก"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Remote"
-msgstr "ลบ"
+msgstr "ระยะไกล"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Local"
-msgstr "ท้องถิ่น"
+msgstr "ระยะใกล้"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance? (No Undo!)"
@@ -6524,7 +6679,7 @@ msgstr "ลบ!"
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Spatial Visible"
-msgstr "ซ่อน/แสดงโหนด"
+msgstr "ซ่อน/แสดงโหนด Spatial"
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle CanvasItem Visible"
@@ -6659,9 +6814,8 @@ msgid "Invalid class name"
 msgstr "ชื่อคลาสไม่ถูกต้อง"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Invalid inherited parent name or path"
-msgstr "ไม่พบคุณสมบัติ"
+msgstr "ชื่อหรือตำแหน่งทีสืบทอดไม่ถูกต้อง"
 
 #: editor/script_create_dialog.cpp
 msgid "Script valid"
@@ -6708,9 +6862,8 @@ msgid "Attach Node Script"
 msgstr "เชื่อมสคริปต์ให้โหนด"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Remote "
-msgstr "ลบ"
+msgstr "ควบคุม "
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -6836,6 +6989,10 @@ msgstr "กำหนดจากผัง"
 msgid "Shortcuts"
 msgstr "ทางลัด"
 
+#: editor/settings_config_dialog.cpp
+msgid "Binding"
+msgstr ""
+
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Light Radius"
 msgstr "ปรับรัศมีแสง"
@@ -6877,23 +7034,62 @@ msgid "Change Notifier Extents"
 msgstr "แก้ไขขนาด Notifier"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Change Particles AABB"
-msgstr "เปลี่ยนกรอบอนุภาค"
+msgstr "เปลี่ยนเส้นกรอบ Particles"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Probe Extents"
 msgstr "แก้ไขขนาด Probe"
 
-#: modules/gdnative/gd_native_library_editor.cpp
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+msgid "Select the dynamic library for this entry"
+msgstr ""
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+msgid "Select dependencies of the library for this entry"
+msgstr ""
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+#, fuzzy
+msgid "Remove current entry"
+msgstr "ลบจุดบนเส้นโค้ง"
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+msgid "Double click to create a new entry"
+msgstr ""
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+msgid "Platform:"
+msgstr ""
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+#, fuzzy
+msgid "Platform"
+msgstr "คัดลอกไปยังแพลตฟอร์ม.."
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+#, fuzzy
+msgid "Dynamic Library"
+msgstr "ไลบรารี"
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+msgid "Add an architecture entry"
+msgstr ""
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+#, fuzzy
+msgid "GDNativeLibrary"
+msgstr "GDNative"
+
+#: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Library"
 msgstr "ไลบรารี"
 
-#: modules/gdnative/gd_native_library_editor.cpp
+#: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Status"
 msgstr "สถานะ"
 
-#: modules/gdnative/gd_native_library_editor.cpp
+#: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Libraries: "
 msgstr "ไลบรารี: "
 
@@ -6957,38 +7153,35 @@ msgstr "ทำซ้ำใน GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Floor:"
-msgstr ""
+msgstr "ชั้น:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Grid Map"
 msgstr "จำกัดด้วยเส้นตาราง"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Snap View"
-msgstr ""
+msgstr "บังคับแนวตาราง"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Floor"
-msgstr "แท็บก่อนหน้า"
+msgstr "ไปชั้นล่าง"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
-msgstr ""
+msgstr "ไปชั้นบน"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Clip Disabled"
-msgstr "ปิดใช้งาน"
+msgstr "ปิดการตัด"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clip Above"
-msgstr ""
+msgstr "ตัดด้านบน"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clip Below"
-msgstr ""
+msgstr "ตัดส่วนล่าง"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Edit X Axis"
@@ -7004,31 +7197,31 @@ msgstr "แก้ไขแกน Z"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Rotate X"
-msgstr "หมุนตามแกน X"
+msgstr "เคอร์เซอร์หมุนตามแกน X"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Rotate Y"
-msgstr "หมุนตามแกน Y"
+msgstr "เคอร์เซอร์หมุนตามแกน Y"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Rotate Z"
-msgstr "หมุนตามแกน Z"
+msgstr "เคอร์เซอร์หมุนตามแกน Z"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Back Rotate X"
-msgstr ""
+msgstr "เคอร์เซอร์หมุนย้อนแกน X"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Back Rotate Y"
-msgstr ""
+msgstr "เคอร์เซอร์หมุนย้อนแกน Y"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Back Rotate Z"
-msgstr ""
+msgstr "เคอร์เซอร์หมุนย้อนแกน Z"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
-msgstr ""
+msgstr "เคอร์เซอร์ลบการหมุน"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Create Area"
@@ -7036,28 +7229,27 @@ msgstr "สร้างพื้นที่ใหม่"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Create Exterior Connector"
-msgstr ""
+msgstr "สร้างจุดเชื่อมต่อภายนอก"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Erase Area"
 msgstr "ลบพื้นที่"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Selection"
-msgstr "ให้สิ่งที่เลือกอยู่กลางจอ"
+msgstr "ลบที่เลือก"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Settings"
-msgstr ""
+msgstr "การตั้งค่า GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Pick Distance:"
-msgstr ""
+msgstr "ระยะการเลือก:"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Builds"
-msgstr ""
+msgstr "สร้าง"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -7151,7 +7343,6 @@ msgid "Add Signal"
 msgstr "เพิ่มสัญญาณ"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Expression"
 msgstr "แก้ไขสมการ"
 
@@ -7168,27 +7359,24 @@ msgid "Duplicate VisualScript Nodes"
 msgstr "ทำซ้ำโหนด"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Hold %s to drop a Getter. Hold Shift to drop a generic signature."
-msgstr "กดปุ่ม Meta ค้างเพื่อวาง Getter กด Shift ค้างเพื่อวาง generic signature"
+msgstr "กดปุ่ม %s ค้างเพื่อวาง Getter หรือกด Shift ค้างเพื่อวาง generic signature"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
 msgstr "กด Ctrl ค้างเพื่อวาง Getter กด Shift ค้างเพื่อวาง generic signature"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Hold %s to drop a simple reference to the node."
-msgstr "กดปุ่ม Meta เพื่อวางการอ้างอิงไปยังโหนดอย่างง่าย"
+msgstr "กดปุ่ม %s เพื่อวางการอ้างอิงอย่างง่ายไปยังโหนด"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a simple reference to the node."
 msgstr "กด Ctrl เพื่อวางการอ้างอิงไปยังโหนดอย่างง่าย"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Hold %s to drop a Variable Setter."
-msgstr "กดปุ่ม Meta ค้างเพื่อวาง Setter ของตัวแปร"
+msgstr "กดปุ่ม %s ค้างเพื่อวาง Setter ของตัวแปร"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a Variable Setter."
@@ -7417,19 +7605,16 @@ msgid "Could not open template for export:\n"
 msgstr "เปิดแม่แบบเพื่อส่งออกไม่ได้:\n"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Invalid export template:\n"
-msgstr "ติดตั้งแม่แบบส่งออก"
+msgstr "แม่แบบส่งออกไม่ถูกต้อง:\n"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read custom HTML shell:\n"
-msgstr "อ่านไฟล์ไม่ได้:\n"
+msgstr "ไม่สามารถอ่านโครงสร้าง HTML:\n"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read boot splash image file:\n"
-msgstr "อ่านไฟล์ไม่ได้:\n"
+msgstr "ไม่สามารถอ่านไฟล์ภาพขณะบูต:\n"
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -7567,6 +7752,25 @@ msgstr "Anchor id ต้องไม่เป็น 0 ไม่เช่นน�
 msgid "ARVROrigin requires an ARVRCamera child node"
 msgstr "ARVROrigin ต้องมี ARVRCamera เป็นโหนดลูก"
 
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Plotting Meshes: "
+msgstr "วางแนว meshes"
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Plotting Lights:"
+msgstr "วางแนว meshes"
+
+#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
+msgid "Finishing Plot"
+msgstr "เสร็จสิ้นการวางแนว"
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Lighting Meshes: "
+msgstr "วางแนว meshes"
+
 #: scene/3d/collision_polygon.cpp
 msgid ""
 "CollisionPolygon only serves to provide a collision shape to a "
@@ -7578,7 +7782,7 @@ msgstr ""
 
 #: scene/3d/collision_polygon.cpp
 msgid "An empty CollisionPolygon has no effect on collision."
-msgstr "CollisionPolygon ที่ว่างเปล่าจะไม่มีผลทางกายภาพ"
+msgstr "CollisionPolygon ที่ว่างเปล่าจะไม่มีผลต่อการชนกัน"
 
 #: scene/3d/collision_shape.cpp
 msgid ""
@@ -7596,13 +7800,8 @@ msgid ""
 msgstr "ต้องมีรูปทรงเพื่อให้ CollisionShape ทำงานได้ กรุณาสร้างรูปทรง!"
 
 #: scene/3d/gi_probe.cpp
-#, fuzzy
 msgid "Plotting Meshes"
-msgstr "คัดลอกรูป"
-
-#: scene/3d/gi_probe.cpp
-msgid "Finishing Plot"
-msgstr ""
+msgstr "วางแนว meshes"
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -7660,16 +7859,16 @@ msgid "Add current color as a preset"
 msgstr "เพิ่มสีที่เลือกในรายการโปรด"
 
 #: scene/gui/dialogs.cpp
-msgid "Cancel"
-msgstr "ยกเลิก"
-
-#: scene/gui/dialogs.cpp
 msgid "Alert!"
 msgstr "แจ้งเตือน!"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
 msgstr "กรุณายืนยัน..."
+
+#: scene/gui/file_dialog.cpp
+msgid "Select this Folder"
+msgstr "เลือกโฟลเดอร์นี้"
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -7692,7 +7891,7 @@ msgstr ""
 
 #: scene/gui/tree.cpp
 msgid "(Other)"
-msgstr ""
+msgstr "(อื่น)"
 
 #: scene/main/scene_tree.cpp
 msgid ""
@@ -7728,6 +7927,30 @@ msgstr "ผิดพลาดขณะโหลดฟอนต์"
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "ขนาดฟอนต์ผิดพลาด"
+
+#~ msgid "Move Add Key"
+#~ msgstr "เลื่อนหรือเพิ่มคีย์แอนิเมชัน"
+
+#~ msgid "Create Subscription"
+#~ msgstr "สร้างการเชื่อมโยง"
+
+#~ msgid "List:"
+#~ msgstr "รายชื่อ:"
+
+#~ msgid "Set Emission Mask"
+#~ msgstr "กำหนด Mask การปะทุ"
+
+#~ msgid "Clear Emitter"
+#~ msgstr "ลบตัวปะทุ"
+
+#~ msgid "Fold Line"
+#~ msgstr "ซ่อน"
+
+#~ msgid " "
+#~ msgstr " "
+
+#~ msgid "Sections:"
+#~ msgstr "หัวข้อ:"
 
 #~ msgid "Cannot navigate to '"
 #~ msgstr "ไม่สามารถไปยัง '"
@@ -8251,9 +8474,6 @@ msgstr "ขนาดฟอนต์ผิดพลาด"
 #~ msgid "Making BVH"
 #~ msgstr "กำลังสร้าง BVH"
 
-#~ msgid "Transfer to Lightmaps:"
-#~ msgstr "ส่งผ่านไปยัง Lightmaps:"
-
 #~ msgid "Allocating Texture #"
 #~ msgstr "จัดสรร Texture #"
 
@@ -8398,9 +8618,6 @@ msgstr "ขนาดฟอนต์ผิดพลาด"
 
 #~ msgid "Del"
 #~ msgstr "ลบ"
-
-#~ msgid "Copy To Platform.."
-#~ msgstr "คัดลอกไปยังแพลตฟอร์ม.."
 
 #~ msgid "just pressed"
 #~ msgstr "เพิ่งกด"

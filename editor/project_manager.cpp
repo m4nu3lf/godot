@@ -213,7 +213,7 @@ private:
 		}
 		String sp = p.simplify_path();
 		project_path->set_text(sp);
-		set_message(TTR(" ")); // just so it does not disappear
+		set_message(" "); // just so it does not disappear
 		get_ok()->call_deferred("grab_focus");
 	}
 
@@ -508,7 +508,8 @@ public:
 			} else if (current->has_setting("application/config/name")) {
 				project_name->set_text(current->get("application/config/name"));
 			}
-			project_name->grab_focus();
+
+			project_name->call_deferred("grab_focus");
 
 			create_dir->hide();
 			status_btn->hide();
@@ -535,21 +536,21 @@ public:
 
 			if (mode == MODE_IMPORT) {
 				set_title(TTR("Import Existing Project"));
-				get_ok()->set_text(TTR("Import"));
+				get_ok()->set_text(TTR("Import & Edit"));
 				name_container->hide();
 				project_path->grab_focus();
 
 			} else if (mode == MODE_NEW) {
 
 				set_title(TTR("Create New Project"));
-				get_ok()->set_text(TTR("Create"));
+				get_ok()->set_text(TTR("Create & Edit"));
 				name_container->show();
 				project_name->grab_focus();
 
 			} else if (mode == MODE_INSTALL) {
 
 				set_title(TTR("Install Project:") + " " + zip_title);
-				get_ok()->set_text(TTR("Install"));
+				get_ok()->set_text(TTR("Install & Edit"));
 				name_container->hide();
 				project_path->grab_focus();
 			}

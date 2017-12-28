@@ -36,9 +36,13 @@
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tool_button.h"
+
+class DependencyRemoveDialog;
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -75,6 +79,14 @@ public:
 	static RegisterFunc unregister_func;
 
 private:
+	enum ItemMenu {
+		ITEM_MENU_COPY_PATH,
+		ITEM_MENU_DELETE,
+		ITEM_MENU_REFRESH,
+		ITEM_MENU_NEW_FOLDER,
+		ITEM_MENU_SHOW_IN_EXPLORER
+	};
+
 	ConfirmationDialog *makedialog;
 	LineEdit *makedirname;
 
@@ -83,6 +95,7 @@ private:
 	//Button *action;
 	VBoxContainer *vbox;
 	Mode mode;
+	bool can_create_dir;
 	LineEdit *dir;
 
 	ToolButton *dir_prev;
@@ -91,6 +104,7 @@ private:
 
 	OptionButton *drives;
 	ItemList *item_list;
+	PopupMenu *item_menu;
 	TextureRect *preview;
 	VBoxContainer *preview_vb;
 	HSplitContainer *list_hb;
@@ -100,6 +114,7 @@ private:
 	OptionButton *filter;
 	DirAccess *dir_access;
 	ConfirmationDialog *confirm_save;
+	DependencyRemoveDialog *remove_dialog;
 	ToolButton *mode_thumbnails;
 	ToolButton *mode_list;
 
@@ -146,6 +161,10 @@ private:
 	void _items_clear_selection();
 	void _item_dc_selected(int p_item);
 
+	void _item_list_item_rmb_selected(int p_item, const Vector2 &p_pos);
+	void _item_list_rmb_clicked(const Vector2 &p_pos);
+	void _item_menu_id_pressed(int p_option);
+
 	void _select_drive(int p_idx);
 	void _dir_entered(String p_dir);
 	void _file_entered(const String &p_file);
@@ -155,6 +174,8 @@ private:
 	void _filter_selected(int);
 	void _make_dir();
 	void _make_dir_confirm();
+
+	void _delete_items();
 
 	void _update_drives();
 

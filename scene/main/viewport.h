@@ -59,6 +59,8 @@ class ViewportTexture : public Texture {
 	friend class Viewport;
 	Viewport *vp;
 
+	RID proxy;
+
 protected:
 	static void _bind_methods();
 
@@ -267,7 +269,6 @@ private:
 		float tooltip_timer;
 		float tooltip_delay;
 		List<Control *> modal_stack;
-		unsigned int cancelled_input_ID;
 		Transform2D focus_inv_xform;
 		bool subwindow_order_dirty;
 		List<Control *> subwindows;

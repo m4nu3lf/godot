@@ -244,7 +244,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	MenuButton *options = memnew(MenuButton);
 	panel->add_child(options);
 	options->set_position(Point2(1, 1));
-	options->set_text("Theme");
+	options->set_text(TTR("Tile Set"));
 	options->get_popup()->add_item(TTR("Add Item"), MENU_OPTION_ADD_ITEM);
 	options->get_popup()->add_item(TTR("Remove Item"), MENU_OPTION_REMOVE_ITEM);
 	options->get_popup()->add_separator();
@@ -314,7 +314,7 @@ TileSetEditorPlugin::TileSetEditorPlugin(EditorNode *p_node) {
 	autotile_editor->side_panel->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	autotile_editor->side_panel->set_custom_minimum_size(Size2(200, 0));
 	autotile_editor->side_panel->hide();
-	autotile_button = p_node->add_bottom_panel_item("Autotiles", autotile_editor);
+	autotile_button = p_node->add_bottom_panel_item(TTR("Autotiles"), autotile_editor);
 	autotile_button->hide();
 }
 
@@ -343,7 +343,7 @@ AutotileEditor::AutotileEditor(EditorNode *p_editor) {
 	split->add_child(property_editor);
 
 	helper = memnew(AutotileEditorHelper(this));
-	property_editor->edit(helper);
+	property_editor->call_deferred("edit", helper);
 
 	// Editor
 
@@ -387,7 +387,7 @@ AutotileEditor::AutotileEditor(EditorNode *p_editor) {
 
 	tools[TOOL_SELECT] = memnew(ToolButton);
 	tool_containers[TOOLBAR_DUMMY]->add_child(tools[TOOL_SELECT]);
-	tools[TOOL_SELECT]->set_tooltip("Select sub-tile to use as icon, this will be also used on invalid autotile bindings.");
+	tools[TOOL_SELECT]->set_tooltip(TTR("Select sub-tile to use as icon, this will be also used on invalid autotile bindings."));
 	tools[TOOL_SELECT]->set_toggle_mode(true);
 	tools[TOOL_SELECT]->set_button_group(tg);
 	tools[TOOL_SELECT]->set_pressed(true);
@@ -533,7 +533,7 @@ void AutotileEditor::_on_edit_mode_changed(int p_edit_mode) {
 			tool_containers[TOOLBAR_BITMASK]->show();
 			tool_containers[TOOLBAR_SHAPE]->hide();
 			tools[TOOL_SELECT]->set_pressed(true);
-			tools[TOOL_SELECT]->set_tooltip("LMB: set bit on.\nRMB: set bit off.");
+			tools[TOOL_SELECT]->set_tooltip(TTR("LMB: set bit on.\nRMB: set bit off."));
 			spin_priority->hide();
 		} break;
 		case EDITMODE_COLLISION:
@@ -542,7 +542,7 @@ void AutotileEditor::_on_edit_mode_changed(int p_edit_mode) {
 			tool_containers[TOOLBAR_DUMMY]->show();
 			tool_containers[TOOLBAR_BITMASK]->hide();
 			tool_containers[TOOLBAR_SHAPE]->show();
-			tools[TOOL_SELECT]->set_tooltip("Select current edited sub-tile.");
+			tools[TOOL_SELECT]->set_tooltip(TTR("Select current edited sub-tile."));
 			spin_priority->hide();
 		} break;
 		default: {
@@ -550,10 +550,10 @@ void AutotileEditor::_on_edit_mode_changed(int p_edit_mode) {
 			tool_containers[TOOLBAR_BITMASK]->hide();
 			tool_containers[TOOLBAR_SHAPE]->hide();
 			if (edit_mode == EDITMODE_ICON) {
-				tools[TOOL_SELECT]->set_tooltip("Select sub-tile to use as icon, this will be also used on invalid autotile bindings.");
+				tools[TOOL_SELECT]->set_tooltip(TTR("Select sub-tile to use as icon, this will be also used on invalid autotile bindings."));
 				spin_priority->hide();
 			} else {
-				tools[TOOL_SELECT]->set_tooltip("Select sub-tile to change it's priority.");
+				tools[TOOL_SELECT]->set_tooltip(TTR("Select sub-tile to change it's priority."));
 				spin_priority->show();
 			}
 		} break;
@@ -1015,21 +1015,47 @@ void AutotileEditor::_on_tool_clicked(int p_tool) {
 		tile_set->autotile_clear_bitmask_map(get_current_tile());
 		workspace->update();
 	} else if (p_tool == SHAPE_DELETE) {
-		if (!edited_collision_shape.is_null()) {
-			Vector<TileSet::ShapeData> sd = tile_set->tile_get_shapes(get_current_tile());
-			int index;
-			for (int i = 0; i < sd.size(); i++) {
-				if (sd[i].shape == edited_collision_shape) {
-					index = i;
-					break;
-				}
-			}
-			if (index >= 0) {
-				sd.remove(index);
-				tile_set->tile_set_shapes(get_current_tile(), sd);
-				edited_collision_shape.unref();
-				current_shape.resize(0);
-				workspace->update();
+		if (creating_shape) {
+			creating_shape = false;
+			current_shape.resize(0);
+			workspace->update();
+		} else {
+			switch (edit_mode) {
+				case EDITMODE_COLLISION: {
+					if (!edited_collision_shape.is_null()) {
+						Vector<TileSet::ShapeData> sd = tile_set->tile_get_shapes(get_current_tile());
+						int index;
+						for (int i = 0; i < sd.size(); i++) {
+							if (sd[i].shape == edited_collision_shape) {
+								index = i;
+								break;
+							}
+						}
+						if (index >= 0) {
+							sd.remove(index);
+							tile_set->tile_set_shapes(get_current_tile(), sd);
+							edited_collision_shape = Ref<ConcavePolygonShape2D>();
+							current_shape.resize(0);
+							workspace->update();
+						}
+					}
+				} break;
+				case EDITMODE_NAVIGATION: {
+					if (!edited_navigation_shape.is_null()) {
+						tile_set->autotile_set_navigation_polygon(get_current_tile(), Ref<NavigationPolygon>(), edited_shape_coord);
+						edited_navigation_shape = Ref<NavigationPolygon>();
+						current_shape.resize(0);
+						workspace->update();
+					}
+				} break;
+				case EDITMODE_OCCLUSION: {
+					if (!edited_occlusion_shape.is_null()) {
+						tile_set->autotile_set_light_occluder(get_current_tile(), Ref<OccluderPolygon2D>(), edited_shape_coord);
+						edited_occlusion_shape = Ref<OccluderPolygon2D>();
+						current_shape.resize(0);
+						workspace->update();
+					}
+				} break;
 			}
 		}
 	} else if (p_tool == ZOOM_OUT) {
@@ -1409,13 +1435,13 @@ bool AutotileEditorHelper::_get(const StringName &p_name, Variant &r_ret) const 
 		return false;
 
 	String name = p_name.operator String();
+	bool v = false;
 	if (name == "bitmask_mode") {
-		r_ret = tile_set->get(String::num(autotile_editor->get_current_tile(), 0) + "/autotile/bitmask_mode");
+		r_ret = tile_set->get(String::num(autotile_editor->get_current_tile(), 0) + "/autotile/bitmask_mode", &v);
 	} else if (name.left(7) == "layout/") {
-		bool v;
 		r_ret = tile_set->get(String::num(autotile_editor->get_current_tile(), 0) + "/autotile" + name.right(6), &v);
-		return v;
 	}
+	return v;
 }
 
 void AutotileEditorHelper::_get_property_list(List<PropertyInfo> *p_list) const {

@@ -690,15 +690,24 @@ Ref<Script> EditorData::get_scene_root_script(int p_idx) const {
 String EditorData::get_scene_title(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), String());
 	if (!edited_scene[p_idx].root)
-		return "[empty]";
+		return TTR("[empty]");
 	if (edited_scene[p_idx].root->get_filename() == "")
-		return "[unsaved]";
+		return TTR("[unsaved]");
 	bool show_ext = EDITOR_DEF("interface/scene_tabs/show_extension", false);
 	String name = edited_scene[p_idx].root->get_filename().get_file();
 	if (!show_ext) {
 		name = name.get_basename();
 	}
 	return name;
+}
+
+void EditorData::set_scene_path(int p_idx, const String &p_path) {
+
+	ERR_FAIL_INDEX(p_idx, edited_scene.size());
+
+	if (!edited_scene[p_idx].root)
+		return;
+	edited_scene[p_idx].root->set_filename(p_path);
 }
 
 String EditorData::get_scene_path(int p_idx) const {

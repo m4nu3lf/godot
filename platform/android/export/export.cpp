@@ -352,10 +352,11 @@ class EditorExportAndroid : public EditorExportPlatform {
 				ea->device_lock->unlock();
 			}
 
+			uint64_t sleep = OS::get_singleton()->get_power_state() == OS::POWERSTATE_ON_BATTERY ? 1000 : 100;
 			uint64_t wait = 3000000;
 			uint64_t time = OS::get_singleton()->get_ticks_usec();
 			while (OS::get_singleton()->get_ticks_usec() - time < wait) {
-				OS::get_singleton()->delay_usec(1000);
+				OS::get_singleton()->delay_usec(1000 * sleep);
 				if (ea->quit_request)
 					break;
 			}
@@ -1305,7 +1306,7 @@ public:
 		return valid;
 	}
 
-	virtual String get_binary_extension() const {
+	virtual String get_binary_extension(const Ref<EditorExportPreset> &p_preset) const {
 		return "apk";
 	}
 
@@ -1557,12 +1558,15 @@ public:
 			encode_uint32(cl.size(), &clf[0]);
 			for (int i = 0; i < cl.size(); i++) {
 
+				print_line(itos(i) + " param: " + cl[i]);
 				CharString txt = cl[i].utf8();
 				int base = clf.size();
-				clf.resize(base + 4 + txt.length());
-				encode_uint32(txt.length(), &clf[base]);
-				copymem(&clf[base + 4], txt.ptr(), txt.length());
-				print_line(itos(i) + " param: " + cl[i]);
+				int length = txt.length();
+				if (!length)
+					continue;
+				clf.resize(base + 4 + length);
+				encode_uint32(length, &clf[base]);
+				copymem(&clf[base + 4], txt.ptr(), length);
 			}
 
 			zip_fileinfo zipfi = get_zip_fileinfo();

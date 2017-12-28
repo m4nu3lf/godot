@@ -78,6 +78,7 @@ class TextEdit : public Control {
 		Ref<Texture> folded_eol_icon;
 		Ref<StyleBox> style_normal;
 		Ref<StyleBox> style_focus;
+		Ref<StyleBox> style_readonly;
 		Ref<Font> font;
 		Color completion_background_color;
 		Color completion_selected_color;
@@ -95,6 +96,7 @@ class TextEdit : public Control {
 		Color selection_color;
 		Color mark_color;
 		Color breakpoint_color;
+		Color code_folding_color;
 		Color current_line_color;
 		Color line_length_guideline_color;
 		Color brace_mismatch_color;
@@ -158,7 +160,7 @@ class TextEdit : public Control {
 		void set_font(const Ref<Font> &p_font);
 		void set_color_regions(const Vector<ColorRegion> *p_regions) { color_regions = p_regions; }
 		int get_line_width(int p_line) const;
-		int get_max_width() const;
+		int get_max_width(bool p_exclude_hidden = false) const;
 		const Map<int, ColorRegionInfo> &get_color_region_info(int p_line);
 		void set(int p_line, const String &p_text);
 		void set_marked(int p_line, bool p_marked) { text[p_line].marked = p_marked; }
@@ -244,6 +246,7 @@ class TextEdit : public Control {
 	bool draw_caret;
 	bool window_has_focus;
 	bool block_caret;
+	bool right_click_moves_caret;
 
 	bool setting_row;
 	bool wrap;
@@ -268,7 +271,7 @@ class TextEdit : public Control {
 	bool brace_matching_enabled;
 	bool highlight_current_line;
 	bool auto_indent;
-	bool cut_copy_line;
+	String cut_copy_line;
 	bool insert_mode;
 	bool select_identifiers_enabled;
 
@@ -430,19 +433,20 @@ public:
 	void fold_all_lines();
 	void unhide_all_lines();
 	int num_lines_from(int p_line_from, int unhidden_amount) const;
-	int get_whitespace_level(int p_line) const;
 	bool can_fold(int p_line) const;
 	bool is_folded(int p_line) const;
 	void fold_line(int p_line);
 	void unfold_line(int p_line);
+	void toggle_fold_line(int p_line);
 
 	String get_text();
 	String get_line(int line) const;
 	void set_line(int line, String new_text);
 	void backspace_at_cursor();
 
-	void indent_selection_left();
-	void indent_selection_right();
+	void indent_left();
+	void indent_right();
+	int get_indent_level(int p_line) const;
 
 	inline void set_scroll_pass_end_of_file(bool p_enabled) {
 		scroll_past_end_of_file_enabled = p_enabled;
@@ -477,6 +481,9 @@ public:
 
 	void cursor_set_block_mode(const bool p_enable);
 	bool cursor_is_block_mode() const;
+
+	void set_right_click_moves_caret(bool p_enable);
+	bool is_right_click_moving_caret() const;
 
 	void set_readonly(bool p_readonly);
 	bool is_readonly() const;

@@ -69,6 +69,8 @@ void ViewportTexture::setup_local_to_scene() {
 	ERR_FAIL_COND(!vp);
 
 	vp->viewport_textures.insert(this);
+
+	VS::get_singleton()->texture_set_proxy(proxy, vp->texture_rid);
 }
 
 void ViewportTexture::set_viewport_path_in_scene(const NodePath &p_path) {
@@ -105,8 +107,8 @@ Size2 ViewportTexture::get_size() const {
 }
 RID ViewportTexture::get_rid() const {
 
-	ERR_FAIL_COND_V(!vp, RID());
-	return vp->texture_rid;
+	//ERR_FAIL_COND_V(!vp, RID());
+	return proxy;
 }
 
 bool ViewportTexture::has_alpha() const {
@@ -147,6 +149,7 @@ ViewportTexture::ViewportTexture() {
 
 	vp = NULL;
 	set_local_to_scene(true);
+	proxy = VS::get_singleton()->texture_create();
 }
 
 ViewportTexture::~ViewportTexture() {
@@ -154,6 +157,8 @@ ViewportTexture::~ViewportTexture() {
 	if (vp) {
 		vp->viewport_textures.erase(this);
 	}
+
+	VS::get_singleton()->free(proxy);
 }
 
 /////////////////////////////////////
@@ -179,7 +184,6 @@ Viewport::GUI::GUI() {
 	key_focus = NULL;
 	mouse_over = NULL;
 
-	cancelled_input_ID = 0;
 	tooltip = NULL;
 	tooltip_popup = NULL;
 	tooltip_label = NULL;
@@ -931,6 +935,9 @@ void Viewport::_camera_remove(Camera *p_camera) {
 
 	cameras.erase(p_camera);
 	if (camera == p_camera) {
+		if (camera && find_world().is_valid()) {
+			camera->notification(Camera::NOTIFICATION_LOST_CURRENT);
+		}
 		camera = NULL;
 	}
 }
@@ -1261,12 +1268,9 @@ Transform2D Viewport::_get_input_pre_xform() const {
 
 Vector2 Viewport::_get_window_offset() const {
 
-	/*
-	if (parent_control) {
-		return (parent_control->get_viewport()->get_final_transform() * parent_control->get_global_transform_with_canvas()).get_origin();
+	if (get_parent() && get_parent()->has_method("get_global_position")) {
+		return get_parent()->call("get_global_position");
 	}
-	*/
-
 	return Vector2();
 }
 
@@ -1416,7 +1420,7 @@ void Viewport::_gui_show_tooltip() {
 	gui.tooltip_label->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_BEGIN, ttp->get_margin(MARGIN_TOP));
 	gui.tooltip_label->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -ttp->get_margin(MARGIN_RIGHT));
 	gui.tooltip_label->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_END, -ttp->get_margin(MARGIN_BOTTOM));
-	gui.tooltip_label->set_text(tooltip);
+	gui.tooltip_label->set_text(tooltip.strip_edges());
 	Rect2 r(gui.tooltip_pos + Point2(10, 10), gui.tooltip_label->get_combined_minimum_size() + ttp->get_minimum_size());
 	Rect2 vr = gui.tooltip_label->get_viewport_rect();
 	if (r.size.x + r.position.x > vr.size.x)
@@ -1615,9 +1619,6 @@ bool Viewport::_gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_che
 
 void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
-	if (p_event->get_id() == gui.cancelled_input_ID) {
-		return;
-	}
 	//?
 	/*
 	if (!is_visible()) {
@@ -1635,11 +1636,13 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (mb->is_pressed()) {
 
 			Size2 pos = mpos;
-			if (gui.mouse_focus && mb->get_button_index() != gui.mouse_focus_button) {
+			if (gui.mouse_focus && mb->get_button_index() != gui.mouse_focus_button && mb->get_button_index() == BUTTON_LEFT) {
 
 				//do not steal mouse focus and stuff
 
 			} else {
+
+				bool is_handled = false;
 
 				_gui_sort_modal_stack();
 				while (!gui.modal_stack.empty()) {
@@ -1652,15 +1655,25 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 							//cancel event, sorry, modal exclusive EATS UP ALL
 							//alternative, you can't pop out a window the same frame it was made modal (fixes many issues)
 							get_tree()->set_input_as_handled();
+
 							return; // no one gets the event if exclusive NO ONE
 						}
 
 						top->notification(Control::NOTIFICATION_MODAL_CLOSE);
 						top->_modal_stack_remove();
 						top->hide();
+
+						if (!top->pass_on_modal_close_click()) {
+							is_handled = true;
+						}
 					} else {
 						break;
 					}
+				}
+
+				if (is_handled) {
+					get_tree()->set_input_as_handled();
+					return;
 				}
 
 				//Matrix32 parent_xform;
@@ -1735,7 +1748,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				_gui_call_input(gui.mouse_focus, mb);
 			}
 
-			get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, "windows", "_cancel_input_ID", mb->get_id());
 			get_tree()->set_input_as_handled();
 
 			if (gui.drag_data.get_type() != Variant::NIL && mb->get_button_index() == BUTTON_LEFT) {
@@ -1791,13 +1803,16 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			pos = gui.focus_inv_xform.xform(pos);
 			mb->set_position(pos);
 
-			if (gui.mouse_focus->can_process()) {
-				_gui_call_input(gui.mouse_focus, mb);
-			}
+			Control *mouse_focus = gui.mouse_focus;
 
+			//disable mouse focus if needed before calling input, this makes popups on mouse press event work better, as the release will never be received otherwise
 			if (mb->get_button_index() == gui.mouse_focus_button) {
 				gui.mouse_focus = NULL;
 				gui.mouse_focus_button = -1;
+			}
+
+			if (mouse_focus->can_process()) {
+				_gui_call_input(mouse_focus, mb);
 			}
 
 			/*if (gui.drag_data.get_type()!=Variant::NIL && mb->get_button_index()==BUTTON_LEFT) {
@@ -1805,7 +1820,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				gui.drag_data=Variant(); //always clear
 			}*/
 
-			get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, "windows", "_cancel_input_ID", mb->get_id());
 			get_tree()->set_input_as_handled();
 		}
 	}
@@ -2332,7 +2346,6 @@ void Viewport::_gui_control_grab_focus(Control *p_control) {
 	//no need for change
 	if (gui.key_focus && gui.key_focus == p_control)
 		return;
-
 	get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, "_viewports", "_gui_remove_focus");
 	gui.key_focus = p_control;
 	p_control->notification(Control::NOTIFICATION_FOCUS_ENTER);
@@ -2353,6 +2366,21 @@ List<Control *>::Element *Viewport::_gui_show_modal(Control *p_control) {
 		p_control->_modal_set_prev_focus_owner(gui.key_focus->get_instance_id());
 	else
 		p_control->_modal_set_prev_focus_owner(0);
+
+	if (gui.mouse_focus && !p_control->is_a_parent_of(gui.mouse_focus)) {
+		Ref<InputEventMouseButton> mb;
+		mb.instance();
+		mb->set_position(gui.mouse_focus->get_local_mouse_position());
+		mb->set_global_position(gui.mouse_focus->get_local_mouse_position());
+		mb->set_button_index(gui.mouse_focus_button);
+		mb->set_pressed(false);
+		gui.mouse_focus->call_multilevel(SceneStringNames::get_singleton()->_gui_input, mb);
+
+		//if (gui.mouse_over == gui.mouse_focus) {
+		//	gui.mouse_focus->notification(Control::NOTIFICATION_MOUSE_EXIT);
+		//}
+		gui.mouse_focus = NULL;
+	}
 
 	return gui.modal_stack.back();
 }
@@ -2813,6 +2841,7 @@ Viewport::Viewport() {
 	default_texture.instance();
 	default_texture->vp = const_cast<Viewport *>(this);
 	viewport_textures.insert(default_texture.ptr());
+	VS::get_singleton()->texture_set_proxy(default_texture->proxy, texture_rid);
 
 	//internal_listener = SpatialSoundServer::get_singleton()->listener_create();
 	audio_listener = false;
@@ -2869,7 +2898,7 @@ Viewport::Viewport() {
 	gui.canvas_sort_index = 0;
 
 	msaa = MSAA_DISABLED;
-	hdr = false;
+	hdr = true;
 
 	usage = USAGE_3D;
 	debug_draw = DEBUG_DRAW_DISABLED;
