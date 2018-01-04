@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -99,10 +99,28 @@ static Vector2 get_mouse_pos(NSEvent *event) {
 
 @implementation GodotApplication
 
-// From http://cocoadev.com/index.pl?GameKeyboardHandlingAlmost
-// This works around an AppKit bug, where key up events while holding
-// down the command key don't get sent to the key window.
 - (void)sendEvent:(NSEvent *)event {
+
+	// special case handling of command-period, which is traditionally a special
+	// shortcut in macOS and doesn't arrive at our regular keyDown handler.
+	if ([event type] == NSKeyDown) {
+		if (([event modifierFlags] & NSEventModifierFlagCommand) && [event keyCode] == 0x2f) {
+
+			Ref<InputEventKey> k;
+			k.instance();
+
+			get_key_modifier_state([event modifierFlags], k);
+			k->set_pressed(true);
+			k->set_scancode(KEY_PERIOD);
+			k->set_echo([event isARepeat]);
+
+			OS_OSX::singleton->push_input(k);
+		}
+	}
+
+	// From http://cocoadev.com/index.pl?GameKeyboardHandlingAlmost
+	// This works around an AppKit bug, where key up events while holding
+	// down the command key don't get sent to the key window.
 	if ([event type] == NSKeyUp && ([event modifierFlags] & NSCommandKeyMask))
 		[[self keyWindow] sendEvent:event];
 	else
@@ -577,8 +595,11 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 		return;
 	if (OS_OSX::singleton->main_loop && OS_OSX::singleton->mouse_mode != OS::MOUSE_MODE_CAPTURED)
 		OS_OSX::singleton->main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
-	if (OS_OSX::singleton->input)
+	if (OS_OSX::singleton->input) {
 		OS_OSX::singleton->input->set_mouse_in_window(true);
+		OS_OSX::singleton->cursor_shape = OS::CURSOR_MAX;
+		OS_OSX::singleton->set_cursor_shape(OS::CURSOR_ARROW);
+	}
 }
 
 - (void)magnifyWithEvent:(NSEvent *)event {
@@ -955,7 +976,7 @@ static void displays_arrangement_changed(CGDirectDisplayID display_id, CGDisplay
 	displays_arrangement_dirty = true;
 }
 
-void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	/*** OSX INITIALIZATION ***/
 	/*** OSX INITIALIZATION ***/
@@ -992,7 +1013,7 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 						backing:NSBackingStoreBuffered
 						  defer:NO];
 
-	ERR_FAIL_COND(window_object == nil);
+	ERR_FAIL_COND_V(window_object == nil, ERR_UNAVAILABLE);
 
 	window_view = [[GodotContentView alloc] init];
 
@@ -1079,11 +1100,11 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 #undef ADD_ATTR2
 
 	pixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attributes];
-	ERR_FAIL_COND(pixelFormat == nil);
+	ERR_FAIL_COND_V(pixelFormat == nil, ERR_UNAVAILABLE);
 
 	context = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:nil];
 
-	ERR_FAIL_COND(context == nil);
+	ERR_FAIL_COND_V(context == nil, ERR_UNAVAILABLE);
 
 	[context setView:window_view];
 
@@ -1127,6 +1148,8 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	_ensure_user_data_dir();
 
 	restore_rect = Rect2(get_window_position(), get_window_size());
+
+	return OK;
 }
 
 void OS_OSX::finalize() {
@@ -1240,28 +1263,82 @@ void OS_OSX::set_cursor_shape(CursorShape p_shape) {
 	if (cursor_shape == p_shape)
 		return;
 
-	switch (p_shape) {
-		case CURSOR_ARROW: [[NSCursor arrowCursor] set]; break;
-		case CURSOR_IBEAM: [[NSCursor IBeamCursor] set]; break;
-		case CURSOR_POINTING_HAND: [[NSCursor pointingHandCursor] set]; break;
-		case CURSOR_CROSS: [[NSCursor crosshairCursor] set]; break;
-		case CURSOR_WAIT: [[NSCursor arrowCursor] set]; break;
-		case CURSOR_BUSY: [[NSCursor arrowCursor] set]; break;
-		case CURSOR_DRAG: [[NSCursor closedHandCursor] set]; break;
-		case CURSOR_CAN_DROP: [[NSCursor openHandCursor] set]; break;
-		case CURSOR_FORBIDDEN: [[NSCursor arrowCursor] set]; break;
-		case CURSOR_VSIZE: [[NSCursor resizeUpDownCursor] set]; break;
-		case CURSOR_HSIZE: [[NSCursor resizeLeftRightCursor] set]; break;
-		case CURSOR_BDIAGSIZE: [[NSCursor arrowCursor] set]; break;
-		case CURSOR_FDIAGSIZE: [[NSCursor arrowCursor] set]; break;
-		case CURSOR_MOVE: [[NSCursor arrowCursor] set]; break;
-		case CURSOR_VSPLIT: [[NSCursor resizeUpDownCursor] set]; break;
-		case CURSOR_HSPLIT: [[NSCursor resizeLeftRightCursor] set]; break;
-		case CURSOR_HELP: [[NSCursor arrowCursor] set]; break;
-		default: {};
+	if (cursors[p_shape] != NULL) {
+		[cursors[p_shape] set];
+	} else {
+		switch (p_shape) {
+			case CURSOR_ARROW: [[NSCursor arrowCursor] set]; break;
+			case CURSOR_IBEAM: [[NSCursor IBeamCursor] set]; break;
+			case CURSOR_POINTING_HAND: [[NSCursor pointingHandCursor] set]; break;
+			case CURSOR_CROSS: [[NSCursor crosshairCursor] set]; break;
+			case CURSOR_WAIT: [[NSCursor arrowCursor] set]; break;
+			case CURSOR_BUSY: [[NSCursor arrowCursor] set]; break;
+			case CURSOR_DRAG: [[NSCursor closedHandCursor] set]; break;
+			case CURSOR_CAN_DROP: [[NSCursor openHandCursor] set]; break;
+			case CURSOR_FORBIDDEN: [[NSCursor arrowCursor] set]; break;
+			case CURSOR_VSIZE: [[NSCursor resizeUpDownCursor] set]; break;
+			case CURSOR_HSIZE: [[NSCursor resizeLeftRightCursor] set]; break;
+			case CURSOR_BDIAGSIZE: [[NSCursor arrowCursor] set]; break;
+			case CURSOR_FDIAGSIZE: [[NSCursor arrowCursor] set]; break;
+			case CURSOR_MOVE: [[NSCursor arrowCursor] set]; break;
+			case CURSOR_VSPLIT: [[NSCursor resizeUpDownCursor] set]; break;
+			case CURSOR_HSPLIT: [[NSCursor resizeLeftRightCursor] set]; break;
+			case CURSOR_HELP: [[NSCursor arrowCursor] set]; break;
+			default: {};
+		}
 	}
 
 	cursor_shape = p_shape;
+}
+
+void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+	if (p_cursor.is_valid()) {
+		Ref<Texture> texture = p_cursor;
+		Ref<Image> image = texture->get_data();
+
+		int image_size = 32 * 32;
+
+		ERR_FAIL_COND(texture->get_width() != 32 || texture->get_height() != 32);
+
+		NSBitmapImageRep *imgrep = [[[NSBitmapImageRep alloc]
+				initWithBitmapDataPlanes:NULL
+							  pixelsWide:image->get_width()
+							  pixelsHigh:image->get_height()
+						   bitsPerSample:8
+						 samplesPerPixel:4
+								hasAlpha:YES
+								isPlanar:NO
+						  colorSpaceName:NSDeviceRGBColorSpace
+							 bytesPerRow:image->get_width() * 4
+							bitsPerPixel:32] autorelease];
+
+		ERR_FAIL_COND(imgrep == nil);
+		uint8_t *pixels = [imgrep bitmapData];
+
+		int len = image->get_width() * image->get_height();
+		PoolVector<uint8_t> data = image->get_data();
+		PoolVector<uint8_t>::Read r = data.read();
+
+		/* Premultiply the alpha channel */
+		for (int i = 0; i < len; i++) {
+			uint8_t alpha = r[i * 4 + 3];
+			pixels[i * 4 + 0] = (uint8_t)(((uint16_t)r[i * 4 + 0] * alpha) / 255);
+			pixels[i * 4 + 1] = (uint8_t)(((uint16_t)r[i * 4 + 1] * alpha) / 255);
+			pixels[i * 4 + 2] = (uint8_t)(((uint16_t)r[i * 4 + 2] * alpha) / 255);
+			pixels[i * 4 + 3] = alpha;
+		}
+
+		NSImage *nsimage = [[[NSImage alloc] initWithSize:NSMakeSize(image->get_width(), image->get_height())] autorelease];
+		[nsimage addRepresentation:imgrep];
+
+		NSCursor *cursor = [[NSCursor alloc] initWithImage:nsimage hotSpot:NSMakePoint(p_hotspot.x, p_hotspot.y)];
+
+		cursors[p_shape] = cursor;
+
+		if (p_shape == CURSOR_ARROW) {
+			[cursor set];
+		}
+	}
 }
 
 void OS_OSX::set_mouse_show(bool p_show) {

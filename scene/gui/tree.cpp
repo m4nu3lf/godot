@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1009,10 +1009,10 @@ void Tree::draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, co
 		case TreeItem::ALIGN_LEFT:
 			break; //do none
 		case TreeItem::ALIGN_CENTER:
-			rect.position.x = MAX(0, (rect.size.width - w) / 2);
+			rect.position.x += MAX(0, (rect.size.width - w) / 2);
 			break; //do none
 		case TreeItem::ALIGN_RIGHT:
-			rect.position.x = MAX(0, (rect.size.width - w));
+			rect.position.x += MAX(0, (rect.size.width - w));
 			break; //do none
 	}
 
@@ -1423,17 +1423,33 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 #endif
 
 				Point2i parent_pos = Point2i(parent_ofs - cache.arrow->get_width() / 2, p_pos.y + label_h / 2 + cache.arrow->get_height() / 2) - cache.offset + p_draw_ofs;
-				VisualServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x - Math::floor(line_width / 2), root_pos.y), cache.relationship_line_color, line_width);
-				VisualServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y), parent_pos, cache.relationship_line_color, line_width);
+
+				if (root_pos.y + line_width >= 0) {
+					VisualServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x - Math::floor(line_width / 2), root_pos.y), cache.relationship_line_color, line_width);
+					VisualServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y), parent_pos, cache.relationship_line_color, line_width);
+				}
+
+				if (htotal < 0) {
+					return -1;
+				}
 			}
 
-			int child_h = draw_item(children_pos, p_draw_ofs, p_draw_size, c);
+			if (htotal >= 0) {
+				int child_h = draw_item(children_pos, p_draw_ofs, p_draw_size, c);
 
-			if (child_h < 0 && cache.draw_relationship_lines == 0)
-				return -1; // break, stop drawing, no need to anymore
+				if (child_h < 0) {
+					if (cache.draw_relationship_lines == 0) {
+						return -1; // break, stop drawing, no need to anymore
+					} else {
+						htotal = -1;
+						children_pos.y = cache.offset.y + p_draw_size.height;
+					}
+				} else {
+					htotal += child_h;
+					children_pos.y += child_h;
+				}
+			}
 
-			htotal += child_h;
-			children_pos.y += child_h;
 			c = c->next;
 		}
 	}
@@ -2352,8 +2368,6 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 						last_keypress = 0;
 				}
 			} break;
-
-				last_keypress = 0;
 		}
 	}
 

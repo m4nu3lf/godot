@@ -6,8 +6,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -58,7 +58,9 @@ public:
 	ShapeBullet();
 	virtual ~ShapeBullet();
 
-	virtual btCollisionShape *create_bt_shape() = 0;
+	btCollisionShape *create_bt_shape();
+	btCollisionShape *create_bt_shape(const Vector3 &p_implicit_scale, real_t p_margin = 0);
+	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_margin = 0) = 0;
 
 	void add_owner(ShapeOwnerBullet *p_owner);
 	void remove_owner(ShapeOwnerBullet *p_owner, bool p_permanentlyFromThisBody = false);
@@ -94,7 +96,7 @@ public:
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
 	virtual PhysicsServer::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape();
+	virtual btCollisionShape *create_bt_shape(const btVector3 &p_scale, real_t p_margin = 0);
 
 private:
 	void setup(const Plane &p_plane);
@@ -111,7 +113,7 @@ public:
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
 	virtual PhysicsServer::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape();
+	virtual btCollisionShape *create_bt_shape(const btVector3 &p_scale, real_t p_margin = 0);
 
 private:
 	void setup(real_t p_radius);
@@ -128,7 +130,7 @@ public:
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
 	virtual PhysicsServer::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape();
+	virtual btCollisionShape *create_bt_shape(const btVector3 &p_scale, real_t p_margin = 0);
 
 private:
 	void setup(const Vector3 &p_half_extents);
@@ -147,7 +149,7 @@ public:
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
 	virtual PhysicsServer::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape();
+	virtual btCollisionShape *create_bt_shape(const btVector3 &p_scale, real_t p_margin = 0);
 
 private:
 	void setup(real_t p_height, real_t p_radius);
@@ -164,7 +166,7 @@ public:
 	void get_vertices(Vector<Vector3> &out_vertices);
 	virtual Variant get_data() const;
 	virtual PhysicsServer::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape();
+	virtual btCollisionShape *create_bt_shape(const btVector3 &p_scale, real_t p_margin = 0);
 
 private:
 	void setup(const Vector<Vector3> &p_vertices);
@@ -182,7 +184,7 @@ public:
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
 	virtual PhysicsServer::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape();
+	virtual btCollisionShape *create_bt_shape(const btVector3 &p_scale, real_t p_margin = 0);
 
 private:
 	void setup(PoolVector<Vector3> p_faces);
@@ -201,7 +203,7 @@ public:
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
 	virtual PhysicsServer::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape();
+	virtual btCollisionShape *create_bt_shape(const btVector3 &p_scale, real_t p_margin = 0);
 
 private:
 	void setup(PoolVector<real_t> &p_heights, int p_width, int p_depth, real_t p_cell_size);
@@ -217,7 +219,7 @@ public:
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
 	virtual PhysicsServer::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape();
+	virtual btCollisionShape *create_bt_shape(const btVector3 &p_scale, real_t p_margin = 0);
 
 private:
 	void setup(real_t p_length);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -93,6 +93,7 @@ class AudioStreamOGGVorbis : public AudioStream {
 	float length;
 	bool loop;
 	float loop_offset;
+	void clear_data();
 
 protected:
 	static void _bind_methods();
@@ -111,6 +112,7 @@ public:
 	PoolVector<uint8_t> get_data() const;
 
 	AudioStreamOGGVorbis();
+	virtual ~AudioStreamOGGVorbis();
 };
 
 #endif
