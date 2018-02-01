@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "particles.h"
 #include "scene/resources/surface_tool.h"
 #include "servers/visual_server.h"
@@ -1596,4 +1597,21 @@ ParticlesMaterial::ParticlesMaterial() :
 }
 
 ParticlesMaterial::~ParticlesMaterial() {
+
+	if (material_mutex)
+		material_mutex->lock();
+
+	if (shader_map.has(current_key)) {
+		shader_map[current_key].users--;
+		if (shader_map[current_key].users == 0) {
+			//deallocate shader, as it's no longer in use
+			VS::get_singleton()->free(shader_map[current_key].shader);
+			shader_map.erase(current_key);
+		}
+
+		VS::get_singleton()->material_set_shader(_get_material(), RID());
+	}
+
+	if (material_mutex)
+		material_mutex->unlock();
 }

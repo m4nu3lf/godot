@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef AUDIO_STREAM_STB_VORBIS_H
 #define AUDIO_STREAM_STB_VORBIS_H
 
@@ -70,8 +71,6 @@ public:
 	virtual float get_playback_position() const;
 	virtual void seek(float p_time);
 
-	virtual float get_length() const; //if supported, otherwise return 0
-
 	AudioStreamPlaybackOGGVorbis() {}
 	~AudioStreamPlaybackOGGVorbis();
 };
@@ -110,6 +109,8 @@ public:
 
 	void set_data(const PoolVector<uint8_t> &p_data);
 	PoolVector<uint8_t> get_data() const;
+
+	virtual float get_length() const; //if supported, otherwise return 0
 
 	AudioStreamOGGVorbis();
 	virtual ~AudioStreamOGGVorbis();

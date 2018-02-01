@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef OCTREE_H
 #define OCTREE_H
 
@@ -611,7 +612,7 @@ bool Octree<T, use_pairs, AL>::_remove_element_from_octant(Element *p_element, O
 		bool unpaired = false;
 
 		if (use_pairs && p_octant->last_pass != pass) {
-			// check wether we should unpair stuff
+			// check whether we should unpair stuff
 			// always test pairable
 			typename List<Element *, AL>::Element *E = p_octant->pairable_elements.front();
 			while (E) {

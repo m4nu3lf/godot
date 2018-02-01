@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "property_editor.h"
 
 #include "core/class_db.h"
@@ -663,6 +664,8 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				return false;
 
 			} else if (hint == PROPERTY_HINT_PROPERTY_OF_INSTANCE) {
+
+				MAKE_PROPSELECT
 
 				Object *instance = ObjectDB::get_instance(hint_text.to_int64());
 				if (instance)

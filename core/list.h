@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef GLOBALS_LIST_H
 #define GLOBALS_LIST_H
 
@@ -387,7 +388,7 @@ public:
 	};
 
 	/**
-	 * return wether the list is empty
+	 * return whether the list is empty
 	 */
 	_FORCE_INLINE_ bool empty() const {
 

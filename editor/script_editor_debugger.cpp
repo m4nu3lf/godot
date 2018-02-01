@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "script_editor_debugger.h"
 
 #include "editor_node.h"
@@ -611,7 +612,9 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 			if (!EditorNode::get_log()->is_visible()) {
 				if (EditorNode::get_singleton()->are_bottom_panels_hidden()) {
-					EditorNode::get_singleton()->make_bottom_panel_item_visible(EditorNode::get_log());
+					if (EDITOR_GET("run/output/always_open_output_on_play")) {
+						EditorNode::get_singleton()->make_bottom_panel_item_visible(EditorNode::get_log());
+					}
 				}
 			}
 			EditorNode::get_log()->add_message(t);
@@ -1052,6 +1055,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				break;
 			};
 
+			const uint64_t until = OS::get_singleton()->get_ticks_msec() + 20;
+
 			while (ppeer->get_available_packet_count() > 0) {
 
 				if (pending_in_queue) {
@@ -1116,6 +1121,9 @@ void ScriptEditorDebugger::_notification(int p_what) {
 						break;
 					}
 				}
+
+				if (OS::get_singleton()->get_ticks_msec() > until)
+					break;
 			}
 
 		} break;
@@ -1165,6 +1173,7 @@ void ScriptEditorDebugger::start() {
 	}
 
 	set_process(true);
+	breaked = false;
 }
 
 void ScriptEditorDebugger::pause() {
@@ -1176,6 +1185,7 @@ void ScriptEditorDebugger::unpause() {
 void ScriptEditorDebugger::stop() {
 
 	set_process(false);
+	breaked = false;
 
 	server->stop();
 
@@ -1608,30 +1618,33 @@ void ScriptEditorDebugger::_error_selected(int p_idx) {
 
 	error_stack->clear();
 	Array st = error_list->get_item_metadata(p_idx);
-	for (int i = 0; i < st.size(); i += 2) {
+	for (int i = 0; i < st.size(); i += 3) {
 
 		String script = st[i];
-		int line = st[i + 1];
+		String func = st[i + 1];
+		int line = st[i + 2];
 		Array md;
 		md.push_back(st[i]);
 		md.push_back(st[i + 1]);
+		md.push_back(st[i + 2]);
 
-		String str = script.get_file() + ":" + itos(line);
+		String str = func + " in " + script.get_file() + ":line " + itos(line);
 
 		error_stack->add_item(str);
 		error_stack->set_item_metadata(error_stack->get_item_count() - 1, md);
-		error_stack->set_item_tooltip(error_stack->get_item_count() - 1, TTR("File:") + " " + String(st[i]) + "\n" + TTR("Line:") + " " + itos(line));
+		error_stack->set_item_tooltip(error_stack->get_item_count() - 1,
+				TTR("File:") + " " + script + "\n" + TTR("Function:") + " " + func + "\n" + TTR("Line:") + " " + itos(line));
 	}
 }
 
 void ScriptEditorDebugger::_error_stack_selected(int p_idx) {
 
 	Array arr = error_stack->get_item_metadata(p_idx);
-	if (arr.size() != 2)
+	if (arr.size() != 3)
 		return;
 
 	Ref<Script> s = ResourceLoader::load(arr[0]);
-	emit_signal("goto_script_line", s, int(arr[1]) - 1);
+	emit_signal("goto_script_line", s, int(arr[2]) - 1);
 }
 
 void ScriptEditorDebugger::set_hide_on_stop(bool p_hide) {

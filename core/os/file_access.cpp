@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "file_access.h"
 
 #include "core/io/file_access_pack.h"
@@ -477,6 +478,9 @@ void FileAccess::store_double(double p_dest) {
 };
 
 uint64_t FileAccess::get_modified_time(const String &p_file) {
+
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && PackedData::get_singleton()->has_path(p_file))
+		return 0;
 
 	FileAccess *fa = create_for_path(p_file);
 	ERR_FAIL_COND_V(!fa, 0);

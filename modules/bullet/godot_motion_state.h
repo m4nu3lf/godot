@@ -1,10 +1,9 @@
 /*************************************************************************/
 /*  godot_motion_state.h                                                 */
-/*  Author: AndreaCatania                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -32,12 +31,17 @@
 #ifndef GODOT_MOTION_STATE_H
 #define GODOT_MOTION_STATE_H
 
-#include "LinearMath/btMotionState.h"
 #include "rigid_body_bullet.h"
+
+#include <LinearMath/btMotionState.h>
+
+/**
+	@author AndreaCatania
+*/
 
 class RigidBodyBullet;
 
-// This clas is responsible to move kinematic actor
+// This class is responsible to move kinematic actor
 // and sincronize rendering engine with Bullet
 /// DOC:
 /// http://www.bulletphysics.org/mediawiki-1.5.8/index.php/MotionStates#What.27s_a_MotionState.3F

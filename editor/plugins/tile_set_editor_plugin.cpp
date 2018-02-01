@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "tile_set_editor_plugin.h"
 
 #include "editor/plugins/canvas_item_editor_plugin.h"
@@ -303,8 +304,7 @@ TileSetEditorPlugin::TileSetEditorPlugin(EditorNode *p_node) {
 	tileset_editor = memnew(TileSetEditor(p_node));
 
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, tileset_editor);
-	tileset_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	tileset_editor->set_anchor(MARGIN_BOTTOM, Control::ANCHOR_BEGIN);
+	tileset_editor->set_anchors_and_margins_preset(Control::PRESET_TOP_WIDE);
 	tileset_editor->set_end(Point2(0, 22));
 	tileset_editor->hide();
 
@@ -339,6 +339,7 @@ AutotileEditor::AutotileEditor(EditorNode *p_editor) {
 	property_editor = memnew(PropertyEditor);
 	property_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	property_editor->set_h_size_flags(SIZE_EXPAND_FILL);
+	property_editor->set_custom_minimum_size(Size2(10, 70));
 	split->add_child(property_editor);
 
 	helper = memnew(AutotileEditorHelper(this));
@@ -419,7 +420,7 @@ AutotileEditor::AutotileEditor(EditorNode *p_editor) {
 	p.push_back((int)SHAPE_DELETE);
 	tools[SHAPE_DELETE]->connect("pressed", this, "_on_tool_clicked", p);
 	tool_containers[TOOLBAR_SHAPE]->add_child(tools[SHAPE_DELETE]);
-	tool_containers[TOOLBAR_SHAPE]->add_change_receptor(memnew(VSeparator));
+	tool_containers[TOOLBAR_SHAPE]->add_child(memnew(VSeparator));
 	tools[SHAPE_KEEP_INSIDE_TILE] = memnew(ToolButton);
 	tools[SHAPE_KEEP_INSIDE_TILE]->set_toggle_mode(true);
 	tools[SHAPE_KEEP_INSIDE_TILE]->set_pressed(true);
@@ -547,6 +548,10 @@ AutotileEditor::AutotileEditor(EditorNode *p_editor) {
 	preview->set_region(true);
 }
 
+AutotileEditor::~AutotileEditor() {
+	memdelete(helper);
+}
+
 void AutotileEditor::_bind_methods() {
 
 	ClassDB::bind_method("_on_autotile_selected", &AutotileEditor::_on_autotile_selected);
@@ -578,6 +583,14 @@ void AutotileEditor::_notification(int p_what) {
 		tools[ZOOM_OUT]->set_icon(get_icon("ZoomLess", "EditorIcons"));
 		tools[ZOOM_1]->set_icon(get_icon("ZoomReset", "EditorIcons"));
 		tools[ZOOM_IN]->set_icon(get_icon("ZoomMore", "EditorIcons"));
+	}
+}
+
+void AutotileEditor::_changed_callback(Object *p_changed, const char *p_prop) {
+	if (p_prop == StringName("texture") || p_prop == StringName("is_autotile")) {
+		edit(tile_set.ptr());
+		autotile_list->update();
+		workspace->update();
 	}
 }
 
@@ -616,8 +629,10 @@ void AutotileEditor::_on_edit_mode_changed(int p_edit_mode) {
 			tool_containers[TOOLBAR_BITMASK]->hide();
 			tool_containers[TOOLBAR_SHAPE]->show();
 			tools[TOOL_SELECT]->set_tooltip(TTR("Select current edited sub-tile."));
-			current_shape = PoolVector2Array();
 			spin_priority->hide();
+
+			current_shape = PoolVector2Array();
+			select_coord(edited_shape_coord);
 		} break;
 		default: {
 			tool_containers[TOOLBAR_DUMMY]->show();
@@ -627,7 +642,7 @@ void AutotileEditor::_on_edit_mode_changed(int p_edit_mode) {
 				tools[TOOL_SELECT]->set_tooltip(TTR("Select sub-tile to use as icon, this will be also used on invalid autotile bindings."));
 				spin_priority->hide();
 			} else {
-				tools[TOOL_SELECT]->set_tooltip(TTR("Select sub-tile to change it's priority."));
+				tools[TOOL_SELECT]->set_tooltip(TTR("Select sub-tile to change its priority."));
 				spin_priority->show();
 			}
 		} break;
@@ -929,50 +944,18 @@ void AutotileEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 								edited_shape_coord = coord;
 								edited_occlusion_shape = tile_set->autotile_get_light_occluder(get_current_tile(), edited_shape_coord);
 								edited_navigation_shape = tile_set->autotile_get_navigation_polygon(get_current_tile(), edited_shape_coord);
-								shape_anchor = edited_shape_coord;
-								shape_anchor.x *= (size.x + spacing);
-								shape_anchor.y *= (size.y + spacing);
-								if (edit_mode == EDITMODE_OCCLUSION) {
-									current_shape.resize(0);
-									if (edited_occlusion_shape.is_valid()) {
-										for (int i = 0; i < edited_occlusion_shape->get_polygon().size(); i++) {
-											current_shape.push_back(edited_occlusion_shape->get_polygon()[i] + shape_anchor);
-										}
-									}
-								} else if (edit_mode == EDITMODE_NAVIGATION) {
-									current_shape.resize(0);
-									if (edited_navigation_shape.is_valid()) {
-										if (edited_navigation_shape->get_polygon_count() > 0) {
-											PoolVector<Vector2> vertices = edited_navigation_shape->get_vertices();
-											for (int i = 0; i < edited_navigation_shape->get_polygon(0).size(); i++) {
-												current_shape.push_back(vertices[edited_navigation_shape->get_polygon(0)[i]] + shape_anchor);
-											}
-										}
+								Vector<TileSet::ShapeData> sd = tile_set->tile_get_shapes(get_current_tile());
+								bool found_collision_shape = false;
+								for (int i = 0; i < sd.size(); i++) {
+									if (sd[i].autotile_coord == coord) {
+										edited_collision_shape = sd[i].shape;
+										found_collision_shape = true;
+										break;
 									}
 								}
-							} else {
-								if (edit_mode == EDITMODE_COLLISION) {
-									Vector<TileSet::ShapeData> sd = tile_set->tile_get_shapes(get_current_tile());
-									for (int i = 0; i < sd.size(); i++) {
-										if (sd[i].autotile_coord == coord) {
-											Ref<ConvexPolygonShape2D> shape = sd[i].shape;
-											if (shape.is_valid()) {
-
-												Rect2 bounding_rect;
-												PoolVector2Array polygon;
-												bounding_rect.position = shape->get_points()[0];
-												for (int j = 0; j < shape->get_points().size(); j++) {
-													polygon.push_back(shape->get_points()[j] + shape_anchor);
-													bounding_rect.expand_to(shape->get_points()[j] + shape_anchor);
-												}
-												if (bounding_rect.has_point(mb->get_position())) {
-													current_shape = polygon;
-													edited_collision_shape = shape;
-												}
-											}
-										}
-									}
-								}
+								if (!found_collision_shape)
+									edited_collision_shape = Ref<ConvexPolygonShape2D>(NULL);
+								select_coord(edited_shape_coord);
 							}
 							workspace->update();
 						} else if (!mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
@@ -1256,14 +1239,14 @@ void AutotileEditor::draw_highlight_tile(Vector2 coord, const Vector<Vector2> &o
 	workspace->draw_rect(Rect2(0, coord.y, coord.x, size.y), Color(0.5, 0.5, 0.5, 0.5));
 	workspace->draw_rect(Rect2(coord.x + size.x, coord.y, region.size.x - coord.x - size.x, size.y), Color(0.5, 0.5, 0.5, 0.5));
 	workspace->draw_rect(Rect2(0, coord.y + size.y, region.size.x, region.size.y - size.y - coord.y), Color(0.5, 0.5, 0.5, 0.5));
-	coord += Vector2(1, 1);
-	workspace->draw_rect(Rect2(coord, size - Vector2(2, 2)), Color(1, 0, 0), false);
+	coord += Vector2(1, 1) / workspace->get_scale().x;
+	workspace->draw_rect(Rect2(coord, size - Vector2(2, 2) / workspace->get_scale().x), Color(1, 0, 0), false);
 	for (int i = 0; i < other_highlighted.size(); i++) {
 		coord = other_highlighted[i];
 		coord.x *= (size.x + spacing);
 		coord.y *= (size.y + spacing);
-		coord += Vector2(1, 1);
-		workspace->draw_rect(Rect2(coord, size - Vector2(2, 2)), Color(1, 0, 0), false);
+		coord += Vector2(1, 1) / workspace->get_scale().x;
+		workspace->draw_rect(Rect2(coord, size - Vector2(2, 2) / workspace->get_scale().x), Color(1, 0, 0), false);
 	}
 }
 
@@ -1271,8 +1254,6 @@ void AutotileEditor::draw_grid_snap() {
 	if (tools[SHAPE_GRID_SNAP]->is_pressed()) {
 		Color grid_color = Color(0.39, 0, 1, 0.2f);
 		Size2 s = workspace->get_size();
-
-		Vector2 size = tile_set->autotile_get_size(get_current_tile());
 
 		int width_count = (int)(s.width / (snap_step.x + snap_separation.x));
 		int height_count = (int)(s.height / (snap_step.y + snap_separation.y));
@@ -1339,7 +1320,7 @@ void AutotileEditor::draw_polygon_shapes() {
 					}
 					Vector<Vector2> polygon;
 					Vector<Color> colors;
-					if (shape == edited_collision_shape) {
+					if (shape == edited_collision_shape && current_shape.size() > 2) {
 						for (int j = 0; j < current_shape.size(); j++) {
 							polygon.push_back(current_shape[j]);
 							colors.push_back(c_bg);
@@ -1389,7 +1370,7 @@ void AutotileEditor::draw_polygon_shapes() {
 					}
 					Vector<Vector2> polygon;
 					Vector<Color> colors;
-					if (shape == edited_occlusion_shape) {
+					if (shape == edited_occlusion_shape && current_shape.size() > 2) {
 						for (int j = 0; j < current_shape.size(); j++) {
 							polygon.push_back(current_shape[j]);
 							colors.push_back(c_bg);
@@ -1437,7 +1418,7 @@ void AutotileEditor::draw_polygon_shapes() {
 					}
 					Vector<Vector2> polygon;
 					Vector<Color> colors;
-					if (shape == edited_navigation_shape) {
+					if (shape == edited_navigation_shape && current_shape.size() > 2) {
 						for (int j = 0; j < current_shape.size(); j++) {
 							polygon.push_back(current_shape[j]);
 							colors.push_back(c_bg);
@@ -1547,6 +1528,39 @@ void AutotileEditor::close_shape(const Vector2 &shape_anchor) {
 	}
 }
 
+void AutotileEditor::select_coord(const Vector2 &coord) {
+	int spacing = tile_set->autotile_get_spacing(get_current_tile());
+	Vector2 size = tile_set->autotile_get_size(get_current_tile());
+	Vector2 shape_anchor = coord;
+	shape_anchor.x *= (size.x + spacing);
+	shape_anchor.y *= (size.y + spacing);
+	if (edit_mode == EDITMODE_COLLISION) {
+		current_shape.resize(0);
+		if (edited_collision_shape.is_valid()) {
+			for (int j = 0; j < edited_collision_shape->get_points().size(); j++) {
+				current_shape.push_back(edited_collision_shape->get_points()[j] + shape_anchor);
+			}
+		}
+	} else if (edit_mode == EDITMODE_OCCLUSION) {
+		current_shape.resize(0);
+		if (edited_occlusion_shape.is_valid()) {
+			for (int i = 0; i < edited_occlusion_shape->get_polygon().size(); i++) {
+				current_shape.push_back(edited_occlusion_shape->get_polygon()[i] + shape_anchor);
+			}
+		}
+	} else if (edit_mode == EDITMODE_NAVIGATION) {
+		current_shape.resize(0);
+		if (edited_navigation_shape.is_valid()) {
+			if (edited_navigation_shape->get_polygon_count() > 0) {
+				PoolVector<Vector2> vertices = edited_navigation_shape->get_vertices();
+				for (int i = 0; i < edited_navigation_shape->get_polygon(0).size(); i++) {
+					current_shape.push_back(vertices[edited_navigation_shape->get_polygon(0)[i]] + shape_anchor);
+				}
+			}
+		}
+	}
+}
+
 Vector2 AutotileEditor::snap_point(const Vector2 &point) {
 	Vector2 p = point;
 	Vector2 coord = edited_shape_coord;
@@ -1576,6 +1590,7 @@ Vector2 AutotileEditor::snap_point(const Vector2 &point) {
 void AutotileEditor::edit(Object *p_node) {
 
 	tile_set = Ref<TileSet>(Object::cast_to<TileSet>(p_node));
+	tile_set->add_change_receptor(this);
 	helper->set_tileset(tile_set);
 
 	autotile_list->clear();

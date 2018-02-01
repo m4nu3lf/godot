@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "main.h"
 
 #include "app_icon.gen.h"
@@ -664,6 +665,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	GLOBAL_DEF("memory/limits/multithreaded_server/rid_pool_prealloc", 60);
 	GLOBAL_DEF("network/limits/debugger_stdout/max_chars_per_second", 2048);
+	GLOBAL_DEF("network/limits/debugger_stdout/max_messages_per_frame", 10);
+	GLOBAL_DEF("network/limits/debugger_stdout/max_errors_per_frame", 10);
 
 	if (debug_mode == "remote") {
 
@@ -900,12 +903,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			OS::get_singleton()->set_screen_orientation(OS::SCREEN_LANDSCAPE);
 	}
 
-	Engine::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/common/fixed_fps", 60));
+	Engine::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/common/physics_fps", 60));
 	Engine::get_singleton()->set_target_fps(GLOBAL_DEF("debug/settings/fps/force_fps", 0));
 
 	GLOBAL_DEF("debug/settings/stdout/print_fps", OS::get_singleton()->is_stdout_verbose());
 
-	if (!OS::get_singleton()->_verbose_stdout) //overrided
+	if (!OS::get_singleton()->_verbose_stdout) //overridden
 		OS::get_singleton()->_verbose_stdout = GLOBAL_DEF("debug/settings/stdout/verbose_stdout", false);
 
 	if (frame_delay == 0) {
@@ -1772,7 +1775,7 @@ bool Main::iteration() {
 
 	if (frame > 1000000) {
 
-		if (GLOBAL_DEF("debug/settings/stdout/print_fps", OS::get_singleton()->is_stdout_verbose())) {
+		if (GLOBAL_DEF("debug/settings/stdout/print_fps", OS::get_singleton()->is_stdout_verbose()) && !editor) {
 			print_line("FPS: " + itos(frames));
 		};
 
@@ -1819,6 +1822,9 @@ void Main::cleanup() {
 
 	ERR_FAIL_COND(!_start_success);
 
+	message_queue->flush();
+	memdelete(message_queue);
+
 	if (script_debugger) {
 		if (use_debug_profiler) {
 			script_debugger->profiling_end();
@@ -1842,11 +1848,6 @@ void Main::cleanup() {
 	EditorNode::unregister_editor_types();
 #endif
 
-	if (audio_server) {
-		audio_server->finish();
-		memdelete(audio_server);
-	}
-
 	if (arvr_server) {
 		// cleanup now before we pull the rug from underneath...
 		memdelete(arvr_server);
@@ -1857,6 +1858,11 @@ void Main::cleanup() {
 	unregister_platform_apis();
 	unregister_scene_types();
 	unregister_server_types();
+
+	if (audio_server) {
+		audio_server->finish();
+		memdelete(audio_server);
+	}
 
 	OS::get_singleton()->finalize();
 	finalize_physics();
@@ -1875,9 +1881,6 @@ void Main::cleanup() {
 		memdelete(globals);
 	if (engine)
 		memdelete(engine);
-
-	message_queue->flush();
-	memdelete(message_queue);
 
 	unregister_core_driver_types();
 	unregister_core_types();

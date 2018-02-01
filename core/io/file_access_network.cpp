@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "file_access_network.h"
 #include "io/ip.h"
 #include "marshalls.h"
@@ -82,7 +83,7 @@ int64_t FileAccessNetworkClient::get_64() {
 
 void FileAccessNetworkClient::_thread_func() {
 
-	client->set_nodelay(true);
+	client->set_no_delay(true);
 	while (!quit) {
 
 		DEBUG_PRINT("SEM WAIT - " + itos(sem->get()));

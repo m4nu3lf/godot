@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef OS_OSX_H
 #define OS_OSX_H
 
@@ -51,6 +52,17 @@
 
 class OS_OSX : public OS_Unix {
 public:
+	struct KeyEvent {
+		unsigned int osx_state;
+		bool pressed;
+		bool echo;
+		uint32_t scancode;
+		uint32_t unicode;
+	};
+
+	Vector<KeyEvent> key_event_buffer;
+	int key_event_pos;
+
 	bool force_quit;
 	//  rasterizer seems to no longer be given to visual server, its using GLES3 directly?
 	//Rasterizer *rasterizer;
@@ -71,6 +83,7 @@ public:
 	CGEventSourceRef eventSource;
 
 	void process_events();
+	void process_key_events();
 
 	void *framework;
 	//          pthread_key_t   current;
@@ -97,6 +110,8 @@ public:
 
 	Size2 window_size;
 	Rect2 restore_rect;
+
+	String open_with_filename;
 
 	Point2 im_position;
 	ImeCallback im_callback;
@@ -137,6 +152,8 @@ public:
 	virtual String get_name();
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
+
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false);
 
 	virtual void set_cursor_shape(CursorShape p_shape);
 	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);

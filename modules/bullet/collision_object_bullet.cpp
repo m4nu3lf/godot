@@ -1,10 +1,9 @@
 /*************************************************************************/
 /*  collision_object_bullet.cpp                                          */
-/*  Author: AndreaCatania                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -30,13 +29,19 @@
 /*************************************************************************/
 
 #include "collision_object_bullet.h"
+
 #include "area_bullet.h"
-#include "btBulletCollisionCommon.h"
 #include "bullet_physics_server.h"
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
 #include "shape_bullet.h"
 #include "space_bullet.h"
+
+#include <btBulletCollisionCommon.h>
+
+/**
+	@author AndreaCatania
+*/
 
 #define enableDynamicAabbTree true
 #define initialChildCapacity 1
@@ -44,7 +49,9 @@
 CollisionObjectBullet::ShapeWrapper::~ShapeWrapper() {}
 
 void CollisionObjectBullet::ShapeWrapper::set_transform(const Transform &p_transform) {
+	G_TO_B(p_transform.get_basis().get_scale(), scale);
 	G_TO_B(p_transform, transform);
+	UNSCALE_BT_BASIS(transform);
 }
 void CollisionObjectBullet::ShapeWrapper::set_transform(const btTransform &p_transform) {
 	transform = p_transform;
@@ -153,16 +160,13 @@ int CollisionObjectBullet::get_godot_object_flags() const {
 
 void CollisionObjectBullet::set_transform(const Transform &p_global_transform) {
 
-	btTransform btTrans;
-	Basis decomposed_basis;
+	set_body_scale(p_global_transform.basis.get_scale());
 
-	Vector3 decomposed_scale = p_global_transform.get_basis().rotref_posscale_decomposition(decomposed_basis);
+	btTransform bt_transform;
+	G_TO_B(p_global_transform, bt_transform);
+	UNSCALE_BT_BASIS(bt_transform);
 
-	G_TO_B(p_global_transform.get_origin(), btTrans.getOrigin());
-	G_TO_B(decomposed_basis, btTrans.getBasis());
-
-	set_body_scale(decomposed_scale);
-	set_transform__bullet(btTrans);
+	set_transform__bullet(bt_transform);
 }
 
 Transform CollisionObjectBullet::get_transform() const {
@@ -230,7 +234,7 @@ void RigidCollisionObjectBullet::set_shape_transform(int p_index, const Transfor
 	ERR_FAIL_INDEX(p_index, get_shape_count());
 
 	shapes[p_index].set_transform(p_transform);
-	on_shapes_changed();
+	on_shape_changed(shapes[p_index].shape);
 }
 
 void RigidCollisionObjectBullet::remove_shape(ShapeBullet *p_shape) {
@@ -310,20 +314,22 @@ void RigidCollisionObjectBullet::on_shapes_changed() {
 	}
 
 	// Insert all shapes
-
+	btVector3 body_scale(get_bt_body_scale());
 	for (i = 0; i < shapes_size; ++i) {
 		shpWrapper = &shapes[i];
 		if (shpWrapper->active) {
 			if (!shpWrapper->bt_shape) {
-				shpWrapper->bt_shape = shpWrapper->shape->create_bt_shape();
+				shpWrapper->bt_shape = shpWrapper->shape->create_bt_shape(shpWrapper->scale * body_scale);
 			}
-			compoundShape->addChildShape(shpWrapper->transform, shpWrapper->bt_shape);
+
+			btTransform scaled_shape_transform(shpWrapper->transform);
+			scaled_shape_transform.getOrigin() *= body_scale;
+			compoundShape->addChildShape(scaled_shape_transform, shpWrapper->bt_shape);
 		} else {
-			compoundShape->addChildShape(shpWrapper->transform, BulletPhysicsServer::get_empty_shape());
+			compoundShape->addChildShape(btTransform(), BulletPhysicsServer::get_empty_shape());
 		}
 	}
 
-	compoundShape->setLocalScaling(get_bt_body_scale());
 	compoundShape->recalculateLocalAabb();
 }
 

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  stream_peer_winsock.h                                                */
+/*  stream_peer_tcp_winsock.h                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifdef WINDOWS_ENABLED
 
 #ifndef STREAM_PEER_TCP_WINSOCK_H
@@ -80,7 +81,7 @@ public:
 	static void make_default();
 	static void cleanup();
 
-	virtual void set_nodelay(bool p_enabled);
+	virtual void set_no_delay(bool p_enabled);
 
 	StreamPeerTCPWinsock();
 	~StreamPeerTCPWinsock();

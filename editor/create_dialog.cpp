@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "create_dialog.h"
 
 #include "class_db.h"
@@ -253,6 +254,10 @@ void CreateDialog::_update_search() {
 
 		if (base_type == "Node" && type.begins_with("Editor"))
 			continue; // do not show editor nodes
+
+		if (base_type == "Resource" && ClassDB::is_parent_class(type, "PluginScript"))
+			// PluginScript must be initialized before use, which is not possible here
+			continue;
 
 		if (!ClassDB::can_instance(type))
 			continue; // can't create what can't be instanced

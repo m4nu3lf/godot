@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifdef TOOLS_ENABLED
 
 #include "collada.h"
@@ -907,7 +908,7 @@ void Collada::_parse_curve_geometry(XMLParser &parser, String p_id, String p_nam
 	COLLADA_PRINT("curve name: " + p_name);
 
 	String current_source;
-	// handles geometry node and the curve childs in this loop
+	// handles geometry node and the curve children in this loop
 	// read sources with arrays and accessor for each curve
 	if (parser.is_empty()) {
 		return;
@@ -995,7 +996,7 @@ void Collada::_parse_mesh_geometry(XMLParser &parser, String p_id, String p_name
 	COLLADA_PRINT("mesh name: " + p_name);
 
 	String current_source;
-	// handles geometry node and the mesh childs in this loop
+	// handles geometry node and the mesh children in this loop
 	// read sources with arrays and accessor for each mesh
 	if (parser.is_empty()) {
 		return;

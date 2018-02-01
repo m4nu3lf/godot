@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "canvas_item_editor_plugin.h"
 
 #include "editor/animation_editor.h"
@@ -339,7 +340,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, const
 		// Grid
 		Point2 offset = grid_offset;
 		if (snap_relative) {
-			List<Node *> &selection = editor_selection->get_selected_node_list();
+			List<Node *> selection = editor_selection->get_selected_node_list();
 			if (selection.size() == 1 && Object::cast_to<Node2D>(selection[0])) {
 				offset = Object::cast_to<Node2D>(selection[0])->get_global_position();
 			} else {
@@ -381,7 +382,7 @@ void CanvasItemEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 			drag = DRAG_PIVOT;
 		} else if (set_pivot_shortcut.is_valid() && set_pivot_shortcut->is_shortcut(p_ev) && drag == DRAG_NONE && can_move_pivot) {
 			if (!Input::get_singleton()->is_mouse_button_pressed(0)) {
-				List<Node *> &selection = editor_selection->get_selected_node_list();
+				List<Node *> selection = editor_selection->get_selected_node_list();
 				Vector2 mouse_pos = viewport->get_local_mouse_position();
 				if (selection.size() && viewport->get_rect().has_point(mouse_pos)) {
 					//just in case, make it work if over viewport
@@ -750,7 +751,7 @@ void CanvasItemEditor::_key_move(const Vector2 &p_dir, bool p_snap, KeyMoveMODE 
 
 	undo_redo->create_action(TTR("Move Action"), UndoRedo::MERGE_ENDS);
 
-	List<Node *> &selection = editor_selection->get_selected_node_list();
+	List<Node *> selection = editor_selection->get_selected_node_list();
 
 	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
@@ -810,7 +811,7 @@ Point2 CanvasItemEditor::_find_topleftmost_point() {
 	Rect2 r2;
 	r2.position = tl;
 
-	List<Node *> &selection = editor_selection->get_selected_node_list();
+	List<Node *> selection = editor_selection->get_selected_node_list();
 
 	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
@@ -834,7 +835,7 @@ Point2 CanvasItemEditor::_find_topleftmost_point() {
 
 int CanvasItemEditor::get_item_count() {
 
-	List<Node *> &selection = editor_selection->get_selected_node_list();
+	List<Node *> selection = editor_selection->get_selected_node_list();
 
 	int ic = 0;
 	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
@@ -1001,7 +1002,7 @@ CanvasItemEditor::DragType CanvasItemEditor::_get_anchor_handle_drag_type(const 
 
 void CanvasItemEditor::_prepare_drag(const Point2 &p_click_pos) {
 
-	List<Node *> &selection = editor_selection->get_selected_node_list();
+	List<Node *> selection = editor_selection->get_selected_node_list();
 
 	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
@@ -1237,7 +1238,7 @@ void CanvasItemEditor::_gui_input_viewport_base(const Ref<InputEvent> &p_event) 
 		if (b->get_button_index() == BUTTON_LEFT && b->is_pressed()) {
 			if (show_guides && show_rulers && EditorNode::get_singleton()->get_edited_scene()) {
 				Transform2D xform = viewport_scrollable->get_transform() * transform;
-				// Retreive the guide lists
+				// Retrieve the guide lists
 				Array vguides;
 				if (EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_vertical_guides_")) {
 					vguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_vertical_guides_");
@@ -1295,7 +1296,7 @@ void CanvasItemEditor::_gui_input_viewport_base(const Ref<InputEvent> &p_event) 
 			if (show_guides && EditorNode::get_singleton()->get_edited_scene()) {
 				Transform2D xform = viewport_scrollable->get_transform() * transform;
 
-				// Retreive the guide lists
+				// Retrieve the guide lists
 				Array vguides;
 				if (EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_vertical_guides_")) {
 					vguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_vertical_guides_");
@@ -1526,7 +1527,7 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 					bone_ik_list.clear();
 
 				} else {
-					List<Node *> &selection = editor_selection->get_selected_node_list();
+					List<Node *> selection = editor_selection->get_selected_node_list();
 
 					for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 						CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E->get());
@@ -1607,7 +1608,7 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 					} else {
 						undo_redo->create_action(TTR("Edit CanvasItem"));
 
-						List<Node *> &selection = editor_selection->get_selected_node_list();
+						List<Node *> selection = editor_selection->get_selected_node_list();
 
 						for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
@@ -1904,7 +1905,7 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		List<Node *> &selection = editor_selection->get_selected_node_list();
+		List<Node *> selection = editor_selection->get_selected_node_list();
 		for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
 			CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E->get());
@@ -1952,9 +1953,9 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 
 					if (node) {
 						real_t angle = node->get_rotation();
-						node->set_rotation(snap_angle(angle + (dfrom - center).angle_to(dto - center), angle));
 						display_rotate_to = dto;
-						display_rotate_from = center;
+						display_rotate_from = center + node->get_pivot_offset().rotated(angle);
+						node->set_rotation(snap_angle(angle + (dfrom - display_rotate_from).angle_to(display_rotate_to - display_rotate_from), angle));
 						viewport->update();
 					}
 				}
@@ -1998,29 +1999,29 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 
 				switch (drag) {
 					case DRAG_ANCHOR_TOP_LEFT:
-						if (!uniform || (uniform && !use_y)) control->set_anchor(MARGIN_LEFT, anchor_snapped.x);
-						if (!uniform || (uniform && use_y)) control->set_anchor(MARGIN_TOP, anchor_snapped.y);
+						if (!uniform || (uniform && !use_y)) control->set_anchor(MARGIN_LEFT, anchor_snapped.x, false);
+						if (!uniform || (uniform && use_y)) control->set_anchor(MARGIN_TOP, anchor_snapped.y, false);
 						continue;
 						break;
 					case DRAG_ANCHOR_TOP_RIGHT:
-						if (!uniform || (uniform && !use_y)) control->set_anchor(MARGIN_RIGHT, anchor_snapped.x);
-						if (!uniform || (uniform && use_y)) control->set_anchor(MARGIN_TOP, anchor_snapped.y);
+						if (!uniform || (uniform && !use_y)) control->set_anchor(MARGIN_RIGHT, anchor_snapped.x, false);
+						if (!uniform || (uniform && use_y)) control->set_anchor(MARGIN_TOP, anchor_snapped.y, false);
 						continue;
 						break;
 					case DRAG_ANCHOR_BOTTOM_RIGHT:
-						if (!uniform || (uniform && !use_y)) control->set_anchor(MARGIN_RIGHT, anchor_snapped.x);
-						if (!uniform || (uniform && use_y)) control->set_anchor(MARGIN_BOTTOM, anchor_snapped.y);
+						if (!uniform || (uniform && !use_y)) control->set_anchor(MARGIN_RIGHT, anchor_snapped.x, false);
+						if (!uniform || (uniform && use_y)) control->set_anchor(MARGIN_BOTTOM, anchor_snapped.y, false);
 						break;
 					case DRAG_ANCHOR_BOTTOM_LEFT:
-						if (!uniform || (uniform && !use_y)) control->set_anchor(MARGIN_LEFT, anchor_snapped.x);
-						if (!uniform || (uniform && use_y)) control->set_anchor(MARGIN_BOTTOM, anchor_snapped.y);
+						if (!uniform || (uniform && !use_y)) control->set_anchor(MARGIN_LEFT, anchor_snapped.x, false);
+						if (!uniform || (uniform && use_y)) control->set_anchor(MARGIN_BOTTOM, anchor_snapped.y, false);
 						continue;
 						break;
 					case DRAG_ANCHOR_ALL:
-						if (!uniform || (uniform && !use_y)) control->set_anchor(MARGIN_LEFT, anchor_snapped.x);
-						if (!uniform || (uniform && !use_y)) control->set_anchor(MARGIN_RIGHT, anchor_snapped.x);
-						if (!uniform || (uniform && use_y)) control->set_anchor(MARGIN_TOP, anchor_snapped.y);
-						if (!uniform || (uniform && use_y)) control->set_anchor(MARGIN_BOTTOM, anchor_snapped.y);
+						if (!uniform || (uniform && !use_y)) control->set_anchor(MARGIN_LEFT, anchor_snapped.x, false);
+						if (!uniform || (uniform && !use_y)) control->set_anchor(MARGIN_RIGHT, anchor_snapped.x, false);
+						if (!uniform || (uniform && use_y)) control->set_anchor(MARGIN_TOP, anchor_snapped.y, false);
+						if (!uniform || (uniform && use_y)) control->set_anchor(MARGIN_BOTTOM, anchor_snapped.y, false);
 						continue;
 						break;
 				}
@@ -2920,7 +2921,7 @@ void CanvasItemEditor::_draw_viewport() {
 	// hide/show buttons depending on the selection
 	bool all_locked = true;
 	bool all_group = true;
-	List<Node *> &selection = editor_selection->get_selected_node_list();
+	List<Node *> selection = editor_selection->get_selected_node_list();
 	if (selection.empty()) {
 		all_locked = false;
 		all_group = false;
@@ -2975,7 +2976,7 @@ void CanvasItemEditor::_notification(int p_what) {
 
 		EditorNode::get_singleton()->get_scene_root()->set_snap_controls_to_pixels(GLOBAL_GET("gui/common/snap_controls_to_pixels"));
 
-		List<Node *> &selection = editor_selection->get_selected_node_list();
+		List<Node *> selection = editor_selection->get_selected_node_list();
 
 		bool all_control = true;
 		bool has_control = false;
@@ -3276,7 +3277,7 @@ void CanvasItemEditor::_update_scroll(float) {
 }
 
 void CanvasItemEditor::_set_anchors_and_margins_preset(Control::LayoutPreset p_preset) {
-	List<Node *> &selection = editor_selection->get_selected_node_list();
+	List<Node *> selection = editor_selection->get_selected_node_list();
 
 	undo_redo->create_action(TTR("Change Anchors and Margins"));
 	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
@@ -3320,7 +3321,7 @@ void CanvasItemEditor::_set_anchors_and_margins_preset(Control::LayoutPreset p_p
 }
 
 void CanvasItemEditor::_set_anchors_preset(Control::LayoutPreset p_preset) {
-	List<Node *> &selection = editor_selection->get_selected_node_list();
+	List<Node *> selection = editor_selection->get_selected_node_list();
 
 	undo_redo->create_action(TTR("Change Anchors"));
 	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
@@ -3463,7 +3464,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 		case LOCK_SELECTED: {
 
-			List<Node *> &selection = editor_selection->get_selected_node_list();
+			List<Node *> selection = editor_selection->get_selected_node_list();
 
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
@@ -3481,7 +3482,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		} break;
 		case UNLOCK_SELECTED: {
 
-			List<Node *> &selection = editor_selection->get_selected_node_list();
+			List<Node *> selection = editor_selection->get_selected_node_list();
 
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
@@ -3501,7 +3502,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		} break;
 		case GROUP_SELECTED: {
 
-			List<Node *> &selection = editor_selection->get_selected_node_list();
+			List<Node *> selection = editor_selection->get_selected_node_list();
 
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
@@ -3519,7 +3520,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		} break;
 		case UNGROUP_SELECTED: {
 
-			List<Node *> &selection = editor_selection->get_selected_node_list();
+			List<Node *> selection = editor_selection->get_selected_node_list();
 
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
@@ -3877,7 +3878,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		} break;
 		case SKELETON_SET_IK_CHAIN: {
 
-			List<Node *> &selection = editor_selection->get_selected_node_list();
+			List<Node *> selection = editor_selection->get_selected_node_list();
 
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
@@ -4434,6 +4435,7 @@ void CanvasItemEditorViewport::_on_change_type_closed() {
 void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) const {
 	label->set_position(get_global_position() + Point2(14, 14) * EDSCALE);
 	label_desc->set_position(label->get_position() + Point2(0, label->get_size().height));
+	bool add_preview = false;
 	for (int i = 0; i < files.size(); i++) {
 		String path = files[i];
 		RES res = ResourceLoader::load(path);
@@ -4455,9 +4457,12 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 					}
 				}
 			}
-			editor->get_scene_root()->add_child(preview_node);
+			add_preview = true;
 		}
 	}
+
+	if (add_preview)
+		editor->get_scene_root()->add_child(preview_node);
 }
 
 void CanvasItemEditorViewport::_remove_preview() {
@@ -4602,6 +4607,14 @@ bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, cons
 void CanvasItemEditorViewport::_perform_drop_data() {
 	_remove_preview();
 
+	// Without root dropping multiple files is not allowed
+	if (!target_node && selected_files.size() > 1) {
+		accept->get_ok()->set_text(TTR("Ok"));
+		accept->set_text(TTR("Cannot instantiate multiple nodes without root."));
+		accept->popup_centered_minsize();
+		return;
+	}
+
 	Vector<String> error_files;
 
 	editor_data->get_undo_redo().create_action(TTR("Create Node"));
@@ -4612,30 +4625,40 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 		if (res.is_null()) {
 			continue;
 		}
-		Ref<Texture> texture = Ref<Texture>(Object::cast_to<Texture>(*res));
 		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
-		if (texture != NULL) {
-			Node *child;
-			if (default_type == "Light2D")
-				child = memnew(Light2D);
-			else if (default_type == "Particles2D")
-				child = memnew(Particles2D);
-			else if (default_type == "Polygon2D")
-				child = memnew(Polygon2D);
-			else if (default_type == "TouchScreenButton")
-				child = memnew(TouchScreenButton);
-			else if (default_type == "TextureRect")
-				child = memnew(TextureRect);
-			else if (default_type == "NinePatchRect")
-				child = memnew(NinePatchRect);
-			else
-				child = memnew(Sprite); // default
+		if (scene != NULL && scene.is_valid()) {
+			if (!target_node) {
+				// Without root node act the same as "Load Inherited Scene"
+				Error err = EditorNode::get_singleton()->load_scene(path, false, true);
+				if (err != OK) {
+					error_files.push_back(path);
+				}
+			} else {
+				bool success = _create_instance(target_node, path, drop_pos);
+				if (!success) {
+					error_files.push_back(path);
+				}
+			}
+		} else {
+			Ref<Texture> texture = Ref<Texture>(Object::cast_to<Texture>(*res));
+			if (texture != NULL && texture.is_valid()) {
+				Node *child;
+				if (default_type == "Light2D")
+					child = memnew(Light2D);
+				else if (default_type == "Particles2D")
+					child = memnew(Particles2D);
+				else if (default_type == "Polygon2D")
+					child = memnew(Polygon2D);
+				else if (default_type == "TouchScreenButton")
+					child = memnew(TouchScreenButton);
+				else if (default_type == "TextureRect")
+					child = memnew(TextureRect);
+				else if (default_type == "NinePatchRect")
+					child = memnew(NinePatchRect);
+				else
+					child = memnew(Sprite); // default
 
-			_create_nodes(target_node, child, path, drop_pos);
-		} else if (scene != NULL) {
-			bool success = _create_instance(target_node, path, drop_pos);
-			if (!success) {
-				error_files.push_back(path);
+				_create_nodes(target_node, child, path, drop_pos);
 			}
 		}
 	}
@@ -4660,14 +4683,14 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 		if (String(d["type"]) == "files") {
 			Vector<String> files = d["files"];
 			bool can_instance = false;
-			for (int i = 0; i < files.size(); i++) { // check if dragged files contain resource or scene can be created at least one
+			for (int i = 0; i < files.size(); i++) { // check if dragged files contain resource or scene can be created at least once
 				RES res = ResourceLoader::load(files[i]);
 				if (res.is_null()) {
 					continue;
 				}
 				String type = res->get_class();
 				if (type == "PackedScene") {
-					Ref<PackedScene> sdata = ResourceLoader::load(files[i]);
+					Ref<PackedScene> sdata = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
 					Node *instanced_scene = sdata->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
 					if (!instanced_scene) {
 						continue;
@@ -4681,7 +4704,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 						   type == "StreamTexture" ||
 						   type == "AtlasTexture" ||
 						   type == "LargeTexture") {
-					Ref<Texture> texture = ResourceLoader::load(files[i]);
+					Ref<Texture> texture = Ref<Texture>(Object::cast_to<Texture>(*res));
 					if (texture.is_valid() == false) {
 						continue;
 					}
@@ -4707,6 +4730,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 }
 
 void CanvasItemEditorViewport::_show_resource_type_selector() {
+	_remove_preview();
 	List<BaseButton *> btn_list;
 	button_group->get_buttons(&btn_list);
 
@@ -4718,6 +4742,17 @@ void CanvasItemEditorViewport::_show_resource_type_selector() {
 	selector->popup_centered_minsize();
 }
 
+bool CanvasItemEditorViewport::_only_packed_scenes_selected() const {
+
+	for (int i = 0; i < selected_files.size(); ++i) {
+		if (ResourceLoader::load(selected_files[i])->get_class() != "PackedScene") {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p_data) {
 	bool is_shift = Input::get_singleton()->is_key_pressed(KEY_SHIFT);
 	bool is_alt = Input::get_singleton()->is_key_pressed(KEY_ALT);
@@ -4727,6 +4762,8 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 	if (d.has("type") && String(d["type"]) == "files") {
 		selected_files = d["files"];
 	}
+	if (selected_files.size() == 0)
+		return;
 
 	List<Node *> list = editor->get_editor_selection()->get_selected_node_list();
 	if (list.size() == 0) {
@@ -4736,25 +4773,19 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 		} else {
 			drop_pos = p_point;
 			target_node = NULL;
-			_show_resource_type_selector();
-			return;
 		}
 	}
-	if (list.size() != 1) {
-		accept->get_ok()->set_text(TTR("I see.."));
-		accept->set_text(TTR("This operation requires a single selected node."));
-		accept->popup_centered_minsize();
-		_remove_preview();
-		return;
+
+	if (list.size() > 0) {
+		target_node = list[0];
+		if (is_shift && target_node != editor->get_edited_scene()) {
+			target_node = target_node->get_parent();
+		}
 	}
 
-	target_node = list[0];
-	if (is_shift && target_node != editor->get_edited_scene()) {
-		target_node = target_node->get_parent();
-	}
 	drop_pos = p_point;
 
-	if (is_alt) {
+	if (is_alt && !_only_packed_scenes_selected()) {
 		_show_resource_type_selector();
 	} else {
 		_perform_drop_data();

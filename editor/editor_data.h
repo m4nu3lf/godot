@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef EDITOR_DATA_H
 #define EDITOR_DATA_H
 
@@ -69,11 +70,11 @@ class EditorHistory {
 		Variant value;
 	};
 
-	void _cleanup_history();
-
 	void _add_object(ObjectID p_object, const String &p_property, int p_level_change);
 
 public:
+	void cleanup_history();
+
 	bool is_at_beginning() const;
 	bool is_at_end() const;
 

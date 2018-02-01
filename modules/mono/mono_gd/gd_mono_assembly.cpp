@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "gd_mono_assembly.h"
 
 #include <mono/metadata/mono-debug.h>
@@ -113,6 +114,37 @@ MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **asse
 				++assemblies_path;
 			}
 		}
+	}
+
+	String name = mono_assembly_name_get_name(aname);
+	bool has_extension = name.ends_with(".dll");
+
+	if (has_extension ? name == "mscorlib.dll" : name == "mscorlib") {
+		GDMonoAssembly **stored_assembly = GDMono::get_singleton()->get_loaded_assembly(has_extension ? name.get_basename() : name);
+		if (stored_assembly) return (*stored_assembly)->get_assembly();
+
+		String path;
+		MonoAssembly *res = NULL;
+
+		for (int i = 0; i < search_dirs.size(); i++) {
+			const String &search_dir = search_dirs[i];
+
+			if (has_extension) {
+				path = search_dir.plus_file(name);
+				if (FileAccess::exists(path)) {
+					res = _load_assembly_from(name.get_basename(), path);
+					break;
+				}
+			} else {
+				path = search_dir.plus_file(name + ".dll");
+				if (FileAccess::exists(path)) {
+					res = _load_assembly_from(name, path);
+					break;
+				}
+			}
+		}
+
+		if (res) return res;
 	}
 
 	return NULL;

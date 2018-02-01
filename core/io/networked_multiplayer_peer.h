@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef NETWORKED_MULTIPLAYER_PEER_H
 #define NETWORKED_MULTIPLAYER_PEER_H
 
@@ -57,6 +58,7 @@ public:
 	};
 
 	virtual void set_transfer_mode(TransferMode p_mode) = 0;
+	virtual TransferMode get_transfer_mode() const = 0;
 	virtual void set_target_peer(int p_peer_id) = 0;
 
 	virtual int get_packet_peer() const = 0;

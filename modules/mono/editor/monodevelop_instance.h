@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef MONODEVELOP_INSTANCE_H
 #define MONODEVELOP_INSTANCE_H
 
@@ -42,7 +43,7 @@ class MonoDevelopInstance {
 
 public:
 	void execute(const Vector<String> &p_files);
-	void execute(const String &p_files);
+	void execute(const String &p_file);
 
 	MonoDevelopInstance(const String &p_solution);
 };

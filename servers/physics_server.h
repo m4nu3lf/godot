@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef PHYSICS_SERVER_H
 #define PHYSICS_SERVER_H
 
@@ -117,7 +118,7 @@ public:
 	void set_margin(float p_margin);
 	float get_margin() const;
 
-	void set_collision_mask(int p_collision_layer);
+	void set_collision_mask(int p_collision_mask);
 	int get_collision_mask() const;
 
 	void set_exclude(const Vector<RID> &p_exclude);

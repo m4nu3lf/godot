@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef PACKET_PEER_H
 #define PACKET_PEER_H
 
@@ -97,6 +98,7 @@ public:
 	virtual int get_max_packet_size() const;
 
 	void set_stream_peer(const Ref<StreamPeer> &p_peer);
+	Ref<StreamPeer> get_stream_peer() const;
 	void set_input_buffer_max_size(int p_max_size);
 	int get_input_buffer_max_size() const;
 	void set_output_buffer_max_size(int p_max_size);

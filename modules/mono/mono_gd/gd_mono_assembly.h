@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef GD_MONO_ASSEMBLY_H
 #define GD_MONO_ASSEMBLY_H
 
@@ -109,7 +110,7 @@ public:
 	_FORCE_INLINE_ String get_path() const { return path; }
 	_FORCE_INLINE_ uint64_t get_modified_time() const { return modified_time; }
 
-	GDMonoClass *get_class(const StringName &p_namespace, const StringName &p_class);
+	GDMonoClass *get_class(const StringName &p_namespace, const StringName &p_name);
 	GDMonoClass *get_class(MonoClass *p_mono_class);
 
 	GDMonoClass *get_object_derived_class(const StringName &p_class);

@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef COLLISION_SHAPE_2D_H
 #define COLLISION_SHAPE_2D_H
 
@@ -45,6 +46,8 @@ class CollisionShape2D : public Node2D {
 	void _shape_changed();
 	bool disabled;
 	bool one_way_collision;
+
+	void _update_in_shape_owner(bool p_xform_only = false);
 
 protected:
 	void _notification(int p_what);

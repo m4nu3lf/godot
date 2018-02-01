@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef SCENE_STRING_NAMES_H
 #define SCENE_STRING_NAMES_H
 
@@ -68,6 +69,7 @@ public:
 	StringName shader_unshaded;
 	StringName shading_mode;
 	StringName tree_entered;
+	StringName tree_exiting;
 	StringName tree_exited;
 	StringName size_flags_changed;
 	StringName minimum_size_changed;

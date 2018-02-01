@@ -3,7 +3,7 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -45,7 +45,11 @@ void PluginScriptLanguage::init() {
 }
 
 String PluginScriptLanguage::get_type() const {
-	return String(_desc.type);
+	// We should use _desc.type here, however the returned type is used to
+	// query ClassDB which would complain given the type is not registered
+	// from his point of view...
+	// To solve this we just use a more generic (but present in ClassDB) type.
+	return String("PluginScript");
 }
 
 String PluginScriptLanguage::get_extension() const {
@@ -99,6 +103,7 @@ Ref<Script> PluginScriptLanguage::get_template(const String &p_class_name, const
 	if (_desc.get_template_source_code) {
 		godot_string src = _desc.get_template_source_code(_data, (godot_string *)&p_class_name, (godot_string *)&p_base_class_name);
 		script->set_source_code(*(String *)&src);
+		godot_string_destroy(&src);
 	}
 	return script;
 }
@@ -168,7 +173,7 @@ Error PluginScriptLanguage::complete_code(const String &p_code, const String &p_
 		for (int i = 0; i < options.size(); i++) {
 			r_options->push_back(String(options[i]));
 		}
-		Error err = *(Error *)tmp;
+		Error err = *(Error *)&tmp;
 		return err;
 	}
 	return ERR_UNAVAILABLE;

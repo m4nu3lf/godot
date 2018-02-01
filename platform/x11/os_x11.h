@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef OS_X11_H
 #define OS_X11_H
 
@@ -198,7 +199,7 @@ protected:
 
 	virtual void set_main_loop(MainLoop *p_main_loop);
 
-	void _window_changed(XEvent *xevent);
+	void _window_changed(XEvent *event);
 
 	bool is_window_maximize_allowed();
 

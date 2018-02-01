@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "editor/editor_node.h"
 #include "editor_export.h"
 #include "io/zip_io.h"
@@ -70,7 +71,7 @@ public:
 	virtual void get_platform_features(List<String> *r_features) {
 
 		r_features->push_back("web");
-		r_features->push_back("JavaScript");
+		r_features->push_back(get_os_name());
 	}
 
 	EditorExportPlatformJavaScript();
@@ -113,9 +114,9 @@ void EditorExportPlatformJavaScript::get_preset_features(const Ref<EditorExportP
 
 void EditorExportPlatformJavaScript::get_export_options(List<ExportOption> *r_options) {
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/custom_html_shell", PROPERTY_HINT_GLOBAL_FILE, "html"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/head_include", PROPERTY_HINT_MULTILINE_TEXT), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "zip"), ""));
@@ -129,7 +130,7 @@ String EditorExportPlatformJavaScript::get_name() const {
 
 String EditorExportPlatformJavaScript::get_os_name() const {
 
-	return "JavaScript";
+	return "HTML5";
 }
 
 Ref<Texture> EditorExportPlatformJavaScript::get_logo() const {

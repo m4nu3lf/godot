@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef AUDIOPLAYER_H
 #define AUDIOPLAYER_H
 
@@ -53,6 +54,7 @@ private:
 	volatile bool active;
 
 	float mix_volume_db;
+	float pitch_scale;
 	float volume_db;
 	bool autoplay;
 	StringName bus;
@@ -79,6 +81,9 @@ public:
 
 	void set_volume_db(float p_volume);
 	float get_volume_db() const;
+
+	void set_pitch_scale(float p_pitch_scale);
+	float get_pitch_scale() const;
 
 	void play(float p_from_pos = 0.0);
 	void seek(float p_seconds);

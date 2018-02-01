@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gi_probe_editor_plugin.h                                             */
+/*  gi_probe_editor_plugin.cpp                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "gi_probe_editor_plugin.h"
 
 void GIProbeEditorPlugin::_bake() {
@@ -72,7 +73,7 @@ void GIProbeEditorPlugin::bake_func_begin(int p_steps) {
 void GIProbeEditorPlugin::bake_func_step(int p_step, const String &p_description) {
 
 	ERR_FAIL_COND(tmp_progress == NULL);
-	tmp_progress->step(p_description, p_step);
+	tmp_progress->step(p_description, p_step, false);
 }
 
 void GIProbeEditorPlugin::bake_func_end() {

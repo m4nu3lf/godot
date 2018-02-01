@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef COLLISION_OBJECT_H
 #define COLLISION_OBJECT_H
 
@@ -115,6 +116,8 @@ public:
 	bool get_capture_input_on_drag() const;
 
 	_FORCE_INLINE_ RID get_rid() const { return rid; }
+
+	virtual String get_configuration_warning() const;
 
 	CollisionObject();
 	~CollisionObject();

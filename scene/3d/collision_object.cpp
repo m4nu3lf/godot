@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "collision_object.h"
 
 #include "scene/scene_string_names.h"
@@ -408,6 +409,20 @@ void CollisionObject::set_capture_input_on_drag(bool p_capture) {
 bool CollisionObject::get_capture_input_on_drag() const {
 
 	return capture_input_on_drag;
+}
+
+String CollisionObject::get_configuration_warning() const {
+
+	String warning = Spatial::get_configuration_warning();
+
+	if (shapes.empty()) {
+		if (warning == String()) {
+			warning += "\n";
+		}
+		warning += TTR("This node has no children shapes, so it can't interact with the space.\nConsider adding CollisionShape or CollisionPolygon children nodes to define its shape.");
+	}
+
+	return warning;
 }
 
 CollisionObject::CollisionObject() {

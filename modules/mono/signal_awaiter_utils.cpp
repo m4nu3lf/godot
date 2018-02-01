@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "signal_awaiter_utils.h"
 
 #include "csharp_script.h"
@@ -101,7 +102,7 @@ Variant SignalAwaiterHandle::_signal_callback(const Variant **p_args, int p_argc
 	GDMonoUtils::SignalAwaiter_SignalCallback thunk = CACHED_METHOD_THUNK(SignalAwaiter, SignalCallback);
 
 	MonoObject *ex = NULL;
-	thunk(get_target(), &signal_args, &ex);
+	thunk(get_target(), signal_args, &ex);
 
 	if (ex) {
 		mono_print_unhandled_exception(ex);

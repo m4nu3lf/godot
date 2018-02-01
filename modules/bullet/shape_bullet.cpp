@@ -1,10 +1,9 @@
 /*************************************************************************/
 /*  shape_bullet.cpp                                                     */
-/*  Author: AndreaCatania                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -30,23 +29,24 @@
 /*************************************************************************/
 
 #include "shape_bullet.h"
-#include "BulletCollision/CollisionShapes/btConvexPointCloudShape.h"
-#include "BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h"
-#include "btBulletCollisionCommon.h"
+
 #include "btRayShape.h"
 #include "bullet_physics_server.h"
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
 #include "shape_owner_bullet.h"
 
+#include <BulletCollision/CollisionShapes/btConvexPointCloudShape.h>
+#include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
+#include <btBulletCollisionCommon.h>
+
+/**
+	@author AndreaCatania
+*/
+
 ShapeBullet::ShapeBullet() {}
 
 ShapeBullet::~ShapeBullet() {}
-
-btCollisionShape *ShapeBullet::create_bt_shape() {
-	btVector3 s(1, 1, 1);
-	return create_bt_shape(s);
-}
 
 btCollisionShape *ShapeBullet::create_bt_shape(const Vector3 &p_implicit_scale, real_t p_margin) {
 	btVector3 s;
@@ -77,7 +77,7 @@ void ShapeBullet::add_owner(ShapeOwnerBullet *p_owner) {
 
 void ShapeBullet::remove_owner(ShapeOwnerBullet *p_owner, bool p_permanentlyFromThisBody) {
 	Map<ShapeOwnerBullet *, int>::Element *E = owners.find(p_owner);
-	ERR_FAIL_COND(!E);
+	if (!E) return;
 	E->get()--;
 	if (p_permanentlyFromThisBody || 0 >= E->get()) {
 		owners.erase(E);
@@ -282,7 +282,7 @@ PhysicsServer::ShapeType ConvexPolygonShapeBullet::get_type() const {
 }
 
 void ConvexPolygonShapeBullet::setup(const Vector<Vector3> &p_vertices) {
-	// Make a copy of verticies
+	// Make a copy of vertices
 	const int n_of_vertices = p_vertices.size();
 	vertices.resize(n_of_vertices);
 	for (int i = n_of_vertices - 1; 0 <= i; --i) {

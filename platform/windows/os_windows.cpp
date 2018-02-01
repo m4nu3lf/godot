@@ -416,6 +416,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			/*mm->get_button_mask()|=(wParam&MK_XBUTTON1)?(1<<5):0;
 			mm->get_button_mask()|=(wParam&MK_XBUTTON2)?(1<<6):0;*/
 			mm->set_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
+			mm->set_global_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 
 			if (mouse_mode == MOUSE_MODE_CAPTURED) {
 
@@ -461,6 +462,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		case WM_MOUSEWHEEL:
 		case WM_MOUSEHWHEEL:
 		case WM_LBUTTONDBLCLK:
+		case WM_MBUTTONDBLCLK:
 		case WM_RBUTTONDBLCLK:
 			/*case WM_XBUTTONDOWN:
 		case WM_XBUTTONUP: */ {
@@ -517,6 +519,12 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 						mb->set_pressed(true);
 						mb->set_button_index(2);
+						mb->set_doubleclick(true);
+					} break;
+					case WM_MBUTTONDBLCLK: {
+
+						mb->set_pressed(true);
+						mb->set_button_index(3);
 						mb->set_doubleclick(true);
 					} break;
 					case WM_MOUSEWHEEL: {
@@ -580,7 +588,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					mb->set_position(Vector2(old_x, old_y));
 				}
 
-				if (uMsg != WM_MOUSEWHEEL) {
+				if (uMsg != WM_MOUSEWHEEL && uMsg != WM_MOUSEHWHEEL) {
 					if (mb->is_pressed()) {
 
 						if (++pressrc > 0)
@@ -1647,7 +1655,7 @@ Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_han
 	PRemoveDllDirectory remove_dll_directory = (PRemoveDllDirectory)GetProcAddress(GetModuleHandle("kernel32.dll"), "RemoveDllDirectory");
 
 	bool has_dll_directory_api = ((add_dll_directory != NULL) && (remove_dll_directory != NULL));
-	DLL_DIRECTORY_COOKIE cookie;
+	DLL_DIRECTORY_COOKIE cookie = NULL;
 
 	if (p_also_set_library_path && has_dll_directory_api) {
 		cookie = add_dll_directory(path.get_base_dir().c_str());
@@ -1655,7 +1663,7 @@ Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_han
 
 	p_library_handle = (void *)LoadLibraryExW(path.c_str(), NULL, (p_also_set_library_path && has_dll_directory_api) ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
 
-	if (p_also_set_library_path && has_dll_directory_api) {
+	if (cookie) {
 		remove_dll_directory(cookie);
 	}
 
@@ -2201,6 +2209,36 @@ String OS_Windows::get_locale() const {
 		return neutral;
 
 	return "en";
+}
+
+// We need this because GetSystemInfo() is unreliable on WOW64
+// see https://msdn.microsoft.com/en-us/library/windows/desktop/ms724381(v=vs.85).aspx
+// Taken from MSDN
+typedef BOOL(WINAPI *LPFN_ISWOW64PROCESS)(HANDLE, PBOOL);
+LPFN_ISWOW64PROCESS fnIsWow64Process;
+
+BOOL is_wow64() {
+	BOOL wow64 = FALSE;
+
+	fnIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
+
+	if (fnIsWow64Process) {
+		if (!fnIsWow64Process(GetCurrentProcess(), &wow64)) {
+			wow64 = FALSE;
+		}
+	}
+
+	return wow64;
+}
+
+int OS_Windows::get_processor_count() const {
+	SYSTEM_INFO sysinfo;
+	if (is_wow64())
+		GetNativeSystemInfo(&sysinfo);
+	else
+		GetSystemInfo(&sysinfo);
+
+	return sysinfo.dwNumberOfProcessors;
 }
 
 OS::LatinKeyboardVariant OS_Windows::get_latin_keyboard_variant() const {

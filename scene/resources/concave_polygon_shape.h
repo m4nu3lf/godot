@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef CONCAVE_POLYGON_SHAPE_H
 #define CONCAVE_POLYGON_SHAPE_H
 
@@ -57,9 +58,6 @@ class ConcavePolygonShape : public Shape {
 	};
 
 protected:
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
 
 	virtual void _update_shape();

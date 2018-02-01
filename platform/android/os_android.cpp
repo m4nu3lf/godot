@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "os_android.h"
 
 #include "core/io/file_access_buffered_fa.h"
@@ -46,6 +47,8 @@
 #include "dir_access_jandroid.h"
 #include "file_access_jandroid.h"
 #endif
+
+#include <dlfcn.h>
 
 class AndroidLogger : public Logger {
 public:
@@ -170,6 +173,15 @@ void OS_Android::alert(const String &p_alert, const String &p_title) {
 	//print("ALERT: %s\n", p_alert.utf8().get_data());
 	if (alert_func)
 		alert_func(p_alert, p_title);
+}
+
+Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+	p_library_handle = dlopen(p_path.utf8().get_data(), RTLD_NOW);
+	if (!p_library_handle) {
+		ERR_EXPLAIN("Can't open dynamic library: " + p_path + ". Error: " + dlerror());
+		ERR_FAIL_V(ERR_CANT_OPEN);
+	}
+	return OK;
 }
 
 void OS_Android::set_mouse_show(bool p_show) {
@@ -443,25 +455,27 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 				}
 				touch.clear();
 			}
-
 		} break;
-		case 3: { // add tuchi
+		case 3: { // add touch
 
-			ERR_FAIL_INDEX(p_pointer, p_points.size());
+			for (int i = 0; i < p_points.size(); i++) {
+				if (p_points[i].id == p_pointer) {
+					TouchPos tp = p_points[i];
+					touch.push_back(tp);
 
-			TouchPos tp = p_points[p_pointer];
-			touch.push_back(tp);
+					Ref<InputEventScreenTouch> ev;
+					ev.instance();
 
-			Ref<InputEventScreenTouch> ev;
-			ev.instance();
+					ev->set_index(tp.id);
+					ev->set_pressed(true);
+					ev->set_position(tp.pos);
+					input->parse_input_event(ev);
 
-			ev->set_index(tp.id);
-			ev->set_pressed(true);
-			ev->set_position(tp.pos);
-			input->parse_input_event(ev);
-
+					break;
+				}
+			}
 		} break;
-		case 4: {
+		case 4: { // remove touch
 
 			for (int i = 0; i < touch.size(); i++) {
 				if (touch[i].id == p_pointer) {
@@ -473,10 +487,10 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 					ev->set_position(touch[i].pos);
 					input->parse_input_event(ev);
 					touch.remove(i);
-					i--;
+
+					break;
 				}
 			}
-
 		} break;
 	}
 }

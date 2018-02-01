@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "color_picker.h"
 
 #include "os/input.h"
@@ -482,6 +483,10 @@ void ColorPicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_w_input"), &ColorPicker::_w_input);
 	ClassDB::bind_method(D_METHOD("_preset_input"), &ColorPicker::_preset_input);
 	ClassDB::bind_method(D_METHOD("_screen_input"), &ColorPicker::_screen_input);
+
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_pick_color", "get_pick_color");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "raw_mode"), "set_raw_mode", "is_raw_mode");
 
 	ADD_SIGNAL(MethodInfo("color_changed", PropertyInfo(Variant::COLOR, "color")));
 }

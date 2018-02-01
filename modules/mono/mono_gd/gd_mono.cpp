@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "gd_mono.h"
 
 #include <mono/metadata/exception.h>
@@ -225,7 +226,7 @@ void GDMono::initialize() {
 
 	mono_install_unhandled_exception_hook(gdmono_unhandled_exception_hook, NULL);
 
-	OS::get_singleton()->print("Mono: ALL IS GOOD\n");
+	OS::get_singleton()->print("Mono: INITIALIZED\n");
 }
 
 #ifndef MONO_GLUE_DISABLED
@@ -695,11 +696,13 @@ bool _GodotSharp::is_domain_loaded() {
 	return GDMono::get_singleton()->get_scripts_domain() != NULL;
 }
 
-#define ENQUEUE_FOR_DISPOSAL(m_queue, m_inst) \
-	m_queue.push_back(m_inst);                \
-	if (queue_empty) {                        \
-		queue_empty = false;                  \
-		call_deferred("_dispose_callback");   \
+#define ENQUEUE_FOR_DISPOSAL(m_queue, m_inst)                                   \
+	m_queue.push_back(m_inst);                                                  \
+	if (queue_empty) {                                                          \
+		queue_empty = false;                                                    \
+		if (!is_finalizing_domain()) { /* call_deferred may not be safe here */ \
+			call_deferred("_dispose_callback");                                 \
+		}                                                                       \
 	}
 
 void _GodotSharp::queue_dispose(MonoObject *p_mono_object, Object *p_object) {

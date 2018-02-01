@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef GDMONOMARSHAL_H
 #define GDMONOMARSHAL_H
 
@@ -101,7 +102,6 @@ _FORCE_INLINE_ MonoObject *variant_to_mono_object(Variant p_var) {
 }
 
 Variant mono_object_to_variant(MonoObject *p_obj);
-Variant mono_object_to_variant(MonoObject *p_obj, const ManagedType &p_type);
 
 // Array
 

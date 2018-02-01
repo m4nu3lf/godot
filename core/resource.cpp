@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "resource.h"
 
 #include "core_string_names.h"
@@ -73,7 +74,7 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 			bool exists = ResourceCache::resources.has(p_path);
 			ResourceCache::lock->read_unlock();
 
-			ERR_EXPLAIN("Another resource is loaded from path: " + p_path);
+			ERR_EXPLAIN("Another resource is loaded from path: " + p_path + " (possible cyclic resource inclusion)");
 			ERR_FAIL_COND(exists);
 		}
 	}

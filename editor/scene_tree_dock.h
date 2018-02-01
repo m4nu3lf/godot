@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef SCENE_TREE_DOCK_H
 #define SCENE_TREE_DOCK_H
 
@@ -159,6 +160,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	bool _validate_no_foreign();
 	void _selection_changed();
+	void _update_script_button();
 
 	void _fill_path_renames(Vector<StringName> base_path, Vector<StringName> new_base_path, Node *p_node, List<Pair<NodePath, NodePath> > *p_renames);
 

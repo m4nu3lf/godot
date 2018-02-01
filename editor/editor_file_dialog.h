@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef EDITORFILEDIALOG_H
 #define EDITORFILEDIALOG_H
 
@@ -158,6 +159,7 @@ private:
 	void _recent_selected(int p_idx);
 
 	void _item_selected(int p_item);
+	void _multi_selected(int p_item, bool p_selected);
 	void _items_clear_selection();
 	void _item_dc_selected(int p_item);
 

@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef INPUT_EVENT_H
 #define INPUT_EVENT_H
 
@@ -109,8 +110,8 @@ enum JoystickList {
 	JOY_WII_C = JOY_BUTTON_5,
 	JOY_WII_Z = JOY_BUTTON_6,
 
-	JOY_WII_MINUS = JOY_BUTTON_9,
-	JOY_WII_PLUS = JOY_BUTTON_10,
+	JOY_WII_MINUS = JOY_BUTTON_10,
+	JOY_WII_PLUS = JOY_BUTTON_11,
 
 	// end of history
 

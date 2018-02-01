@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef GODOT_NATIVESCRIPT_H
 #define GODOT_NATIVESCRIPT_H
 
@@ -49,7 +50,7 @@ typedef enum {
 	GODOT_PROPERTY_HINT_RANGE, ///< hint_text = "min,max,step,slider; //slider is optional"
 	GODOT_PROPERTY_HINT_EXP_RANGE, ///< hint_text = "min,max,step", exponential edit
 	GODOT_PROPERTY_HINT_ENUM, ///< hint_text= "val1,val2,val3,etc"
-	GODOT_PROPERTY_HINT_EXP_EASING, /// exponential easing funciton (Math::ease)
+	GODOT_PROPERTY_HINT_EXP_EASING, /// exponential easing function (Math::ease)
 	GODOT_PROPERTY_HINT_LENGTH, ///< hint_text= "length" (as integer)
 	GODOT_PROPERTY_HINT_SPRITE_FRAME,
 	GODOT_PROPERTY_HINT_KEY_ACCEL, ///< hint_text= "length" (as integer)

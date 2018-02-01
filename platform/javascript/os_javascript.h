@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef OS_JAVASCRIPT_H
 #define OS_JAVASCRIPT_H
 
@@ -51,7 +52,6 @@ class OS_JavaScript : public OS_Unix {
 
 	VisualServer *visual_server;
 	AudioDriverJavaScript audio_driver_javascript;
-	const char *gl_extensions;
 
 	InputDefault *input;
 	Vector2 windowed_size;
@@ -127,6 +127,7 @@ public:
 	virtual bool is_userfs_persistent() const;
 
 	virtual void set_cursor_shape(CursorShape p_shape);
+	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
 
 	void main_loop_begin();
 	bool main_loop_iterate();
@@ -136,8 +137,6 @@ public:
 	void main_loop_focusin();
 
 	virtual bool has_touchscreen_ui_hint() const;
-
-	void set_opengl_extensions(const char *p_gl_extensions);
 
 	virtual Error shell_open(String p_uri);
 	virtual String get_user_data_dir() const;

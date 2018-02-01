@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "project_settings.h"
 
 #include "bind/core_bind.h"
@@ -166,7 +167,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 		}
 
 		if (props.has(p_name)) {
-			if (!props[p_name].overrided)
+			if (!props[p_name].overridden)
 				props[p_name].variant = p_value;
 
 		} else {

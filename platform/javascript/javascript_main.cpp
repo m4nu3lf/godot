@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "emscripten.h"
 #include "io/resource_loader.h"
 #include "main/main.h"
@@ -64,7 +65,7 @@ int main(int argc, char *argv[]) {
 		FS.mkdir('/userfs');
 		FS.mount(IDBFS, {}, '/userfs');
 		FS.syncfs(true, function(err) {
-			Module['ccall']('main_after_fs_sync', null, ['string'], [err ? err.message : ""])
+			ccall('main_after_fs_sync', null, ['string'], [err ? err.message : ""])
 		});
 	);
 	/* clang-format on */

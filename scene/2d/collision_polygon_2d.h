@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef COLLISION_POLYGON_2D_H
 #define COLLISION_POLYGON_2D_H
 
@@ -57,6 +58,8 @@ protected:
 	Vector<Vector<Vector2> > _decompose_in_convex();
 
 	void _build_polygon();
+
+	void _update_in_shape_owner(bool p_xform_only = false);
 
 protected:
 	void _notification(int p_what);

@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifdef UNIX_ENABLED
 
 #include "stream_peer_tcp_posix.h"
@@ -303,7 +304,7 @@ Error StreamPeerTCPPosix::read(uint8_t *p_buffer, int p_bytes, int &r_received, 
 	return OK;
 };
 
-void StreamPeerTCPPosix::set_nodelay(bool p_enabled) {
+void StreamPeerTCPPosix::set_no_delay(bool p_enabled) {
 
 	ERR_FAIL_COND(!is_connected_to_host());
 	int flag = p_enabled ? 1 : 0;

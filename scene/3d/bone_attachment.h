@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef BONE_ATTACHMENT_H
 #define BONE_ATTACHMENT_H
 
@@ -43,9 +44,7 @@ class BoneAttachment : public Spatial {
 	void _check_unbind();
 
 protected:
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	bool _set(const StringName &p_name, const Variant &p_value);
-	void _get_property_list(List<PropertyInfo> *p_list) const;
+	virtual void _validate_property(PropertyInfo &property) const;
 	void _notification(int p_what);
 
 	static void _bind_methods();

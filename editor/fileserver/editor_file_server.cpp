@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "editor_file_server.h"
 
 #include "../editor_settings.h"
@@ -54,7 +55,7 @@ void EditorFileServer::_subthread_start(void *s) {
 
 	ClientData *cd = (ClientData *)s;
 
-	cd->connection->set_nodelay(true);
+	cd->connection->set_no_delay(true);
 	uint8_t buf4[8];
 	Error err = cd->connection->get_data(buf4, 4);
 	if (err != OK) {

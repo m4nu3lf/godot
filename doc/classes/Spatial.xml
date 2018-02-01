@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Spatial" inherits="Node" category="Core" version="3.0-beta">
+<class name="Spatial" inherits="Node" category="Core" version="3.0-stable">
 	<brief_description>
 		Most basic 3D game object, parent of all 3D related nodes.
 	</brief_description>
@@ -9,17 +9,11 @@
 		Affine operations (rotate, scale, translate) happen in parent's local coordinate system, unless the Spatial object is set as top level. Affine operations in this coordinate system correspond to direct affine operations on the Spatial's transform. The word local below refers to this coordinate system. The coordinate system that is attached to the Spatial object itself is referred to as object-local coordinate system.
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/3.0/tutorials/3d/introduction_to_3d.html
 	</tutorials>
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_gizmo" qualifiers="const">
-			<return type="SpatialGizmo">
-			</return>
-			<description>
-				Returns the SpatialGizmo for this node. Used for example in [EditorSpatialGizmo] as custom visualization and editing handles in Editor.
-			</description>
-		</method>
 		<method name="get_parent_spatial" qualifiers="const">
 			<return type="Spatial">
 			</return>
@@ -195,15 +189,6 @@
 				Makes the node ignore its parents transformations. Node transformations are only in global space.
 			</description>
 		</method>
-		<method name="set_gizmo">
-			<return type="void">
-			</return>
-			<argument index="0" name="gizmo" type="SpatialGizmo">
-			</argument>
-			<description>
-				Set [SpatialGizmo] for this node. Used for example in [EditorSpatialGizmo] as custom visualization and editing handles in Editor.
-			</description>
-		</method>
 		<method name="set_identity">
 			<return type="void">
 			</return>
@@ -289,6 +274,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="gizmo" type="SpatialGizmo" setter="set_gizmo" getter="get_gizmo">
+			The SpatialGizmo for this node. Used for example in [EditorSpatialGizmo] as custom visualization and editing handles in Editor.
+		</member>
 		<member name="global_transform" type="Transform" setter="set_global_transform" getter="get_global_transform">
 			World space (global) [Transform] of this node.
 		</member>

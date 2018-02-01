@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef TILE_SET_EDITOR_PLUGIN_H
 #define TILE_SET_EDITOR_PLUGIN_H
 
@@ -119,10 +120,12 @@ class AutotileEditor : public Control {
 	AutotileEditorHelper *helper;
 
 	AutotileEditor(EditorNode *p_editor);
+	~AutotileEditor();
 
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	virtual void _changed_callback(Object *p_changed, const char *p_prop);
 
 private:
 	void _on_autotile_selected(int p_index);
@@ -143,6 +146,7 @@ private:
 	void draw_grid_snap();
 	void draw_polygon_shapes();
 	void close_shape(const Vector2 &shape_anchor);
+	void select_coord(const Vector2 &coord);
 	Vector2 snap_point(const Vector2 &point);
 
 	void edit(Object *p_node);

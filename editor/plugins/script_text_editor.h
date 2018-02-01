@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef SCRIPT_TEXT_EDITOR_H
 #define SCRIPT_TEXT_EDITOR_H
 
@@ -43,6 +44,8 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	Vector<String> functions;
 
+	Vector<String> member_keywords;
+
 	HBoxContainer *edit_hb;
 
 	MenuButton *edit_menu;
@@ -56,6 +59,8 @@ class ScriptTextEditor : public ScriptEditorBase {
 	ColorPicker *color_picker;
 	int color_line;
 	String color_args;
+
+	void _update_member_keywords();
 
 	struct ColorsCache {
 		Color symbol_color;

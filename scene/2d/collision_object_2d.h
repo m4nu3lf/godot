@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef COLLISION_OBJECT_2D_H
 #define COLLISION_OBJECT_2D_H
 
@@ -105,6 +106,8 @@ public:
 
 	void set_pickable(bool p_enabled);
 	bool is_pickable() const;
+
+	String get_configuration_warning() const;
 
 	_FORCE_INLINE_ RID get_rid() const { return rid; }
 

@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef OS_WINDOWS_H
 #define OS_WINDOWS_H
 #include "context_gl_win.h"
@@ -252,6 +253,9 @@ public:
 	virtual String get_executable_path() const;
 
 	virtual String get_locale() const;
+
+	virtual int get_processor_count() const;
+
 	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;
 
 	virtual void enable_for_stealing_focus(ProcessID pid);

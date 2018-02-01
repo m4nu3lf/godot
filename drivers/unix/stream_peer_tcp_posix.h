@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifdef UNIX_ENABLED
 
 #ifndef STREAM_PEER_TCP_POSIX_H
@@ -76,7 +77,7 @@ public:
 	virtual Status get_status() const;
 	virtual void disconnect_from_host();
 
-	virtual void set_nodelay(bool p_enabled);
+	virtual void set_no_delay(bool p_enabled);
 
 	static void make_default();
 

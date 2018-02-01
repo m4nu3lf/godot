@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef FILESYSTEM_DOCK_H
 #define FILESYSTEM_DOCK_H
 
@@ -156,7 +157,7 @@ private:
 	bool import_dock_needs_update;
 
 	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths);
-	void _update_tree(bool keep_collapse_state);
+	void _update_tree(bool keep_collapse_state, bool p_uncollapse_root = false);
 
 	void _update_files(bool p_keep_selection);
 	void _update_file_display_toggle_button();

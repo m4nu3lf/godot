@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "ray_cast.h"
 
 #include "collision_object.h"
@@ -216,6 +217,8 @@ void RayCast::_update_raycast_state() {
 		against_shape = rr.shape;
 	} else {
 		collided = false;
+		against = 0;
+		against_shape = 0;
 	}
 }
 
