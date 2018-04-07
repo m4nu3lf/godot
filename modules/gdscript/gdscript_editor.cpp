@@ -60,7 +60,7 @@ Ref<Script> GDScriptLanguage::get_template(const String &p_class_name, const Str
 					   "# var a = 2\n" +
 					   "# var b = \"textvar\"\n\n" +
 					   "func _ready():\n" +
-					   "%TS%# Called every time the node is added to the scene.\n" +
+					   "%TS%# Called when the node is added to the scene for the first time.\n" +
 					   "%TS%# Initialization here\n" +
 					   "%TS%pass\n\n" +
 					   "#func _process(delta):\n" +
@@ -369,8 +369,8 @@ void GDScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) const
 		mi.name = "yield";
 		mi.arguments.push_back(PropertyInfo(Variant::OBJECT, "object"));
 		mi.arguments.push_back(PropertyInfo(Variant::STRING, "signal"));
-		mi.default_arguments.push_back(Variant::NIL);
-		mi.default_arguments.push_back(Variant::STRING);
+		mi.default_arguments.push_back(Variant());
+		mi.default_arguments.push_back(String());
 		mi.return_val = PropertyInfo(Variant::OBJECT, "", PROPERTY_HINT_RESOURCE_TYPE, "GDScriptFunctionState");
 		p_functions->push_back(mi);
 	}
@@ -410,13 +410,11 @@ String GDScriptLanguage::make_function(const String &p_class, const String &p_na
 
 	String s = "func " + p_name + "(";
 	if (p_args.size()) {
-		s += " ";
 		for (int i = 0; i < p_args.size(); i++) {
 			if (i > 0)
 				s += ", ";
 			s += p_args[i].get_slice(":", 0);
 		}
-		s += " ";
 	}
 	s += "):\n" + _get_indentation() + "pass # replace with function body\n";
 
@@ -2852,7 +2850,24 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 							return OK;
 						}
 					} else {
-						r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
+						/*
+						// Because get_integer_constant_enum and get_integer_constant dont work on @GlobalScope
+						// We cannot determine the exact nature of the identifier here
+						// Otherwise these codes would work
+						StringName enumName = ClassDB::get_integer_constant_enum("@GlobalScope", p_symbol, true);
+						if (enumName != NULL) {
+							r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_ENUM;
+							r_result.class_name = "@GlobalScope";
+							r_result.class_member = enumName;
+							return OK;
+						}
+						else {
+							r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
+							r_result.class_name = "@GlobalScope";
+							r_result.class_member = p_symbol;
+							return OK;
+						}*/
+						r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_TBD_GLOBALSCOPE;
 						r_result.class_name = "@GlobalScope";
 						r_result.class_member = p_symbol;
 						return OK;
@@ -2912,6 +2927,14 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 						r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
 						r_result.class_name = t.obj_type;
 						r_result.class_member = p_symbol;
+						return OK;
+					}
+
+					StringName enumName = ClassDB::get_integer_constant_enum(t.obj_type, p_symbol, true);
+					if (enumName != StringName()) {
+						r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_ENUM;
+						r_result.class_name = t.obj_type;
+						r_result.class_member = enumName;
 						return OK;
 					}
 

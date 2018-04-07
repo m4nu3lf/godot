@@ -2010,7 +2010,7 @@ void Node::set_editable_instance(Node *p_node, bool p_editable) {
 	if (!p_editable) {
 		data.editable_instances.erase(p);
 		// Avoid this flag being needlessly saved;
-		// also give more visual feedback if editable children is reenabled
+		// also give more visual feedback if editable children is re-enabled
 		set_display_folded(false);
 	} else {
 		data.editable_instances[p] = true;
@@ -2502,7 +2502,10 @@ void Node::replace_by(Node *p_node, bool p_keep_data) {
 
 		Node *child = get_child(0);
 		remove_child(child);
-		p_node->add_child(child);
+		if (!child->is_owned_by_parent()) {
+			// add the custom children to the p_node
+			p_node->add_child(child);
+		}
 	}
 
 	p_node->set_owner(owner);

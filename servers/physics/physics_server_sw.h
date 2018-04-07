@@ -236,7 +236,7 @@ public:
 	virtual void body_set_ray_pickable(RID p_body, bool p_enable);
 	virtual bool body_is_ray_pickable(RID p_body) const;
 
-	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, MotionResult *r_result = NULL);
+	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = NULL);
 
 	// this function only works on physics process, errors and returns null otherwise
 	virtual PhysicsDirectBodyState *body_get_direct_state(RID p_body);
@@ -285,6 +285,9 @@ public:
 
 	virtual void joint_set_solver_priority(RID p_joint, int p_priority);
 	virtual int joint_get_solver_priority(RID p_joint) const;
+
+	virtual void joint_disable_collisions_between_bodies(RID p_joint, const bool p_disable);
+	virtual bool joint_is_disabled_collisions_between_bodies(RID p_joint) const;
 
 	/* MISC */
 

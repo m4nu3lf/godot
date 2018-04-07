@@ -121,8 +121,11 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 	if (p_mode == PROCESS_CACHE) {
 		l.offset_caches.clear();
 		l.height_caches.clear();
+		l.ascent_caches.clear();
+		l.descent_caches.clear();
 		l.char_count = 0;
 		l.minimum_width = 0;
+		l.maximum_width = 0;
 	}
 
 	int wofs = margin;
@@ -140,6 +143,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 	//line height should be the font height for the first time, this ensures that an empty line will never have zero height and successive newlines are displayed
 	int line_height = cfont->get_height();
+	int line_ascent = cfont->get_ascent();
+	int line_descent = cfont->get_descent();
 
 	int nonblank_line_count = 0; //number of nonblank lines as counted during PROCESS_DRAW
 
@@ -169,16 +174,22 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 				case ALIGN_FILL: l.offset_caches.push_back((p_width - margin) - used /*+spaces_size*/); break;                                                  \
 			}                                                                                                                                                   \
 			l.height_caches.push_back(line_height);                                                                                                             \
+			l.ascent_caches.push_back(line_ascent);                                                                                                             \
+			l.descent_caches.push_back(line_descent);                                                                                                           \
 			l.space_caches.push_back(spaces);                                                                                                                   \
 		}                                                                                                                                                       \
 		y += line_height + get_constant(SceneStringNames::get_singleton()->line_separation);                                                                    \
 		line_height = 0;                                                                                                                                        \
+		line_ascent = 0;                                                                                                                                        \
+		line_descent = 0;                                                                                                                                       \
 		spaces = 0;                                                                                                                                             \
 		spaces_size = 0;                                                                                                                                        \
 		wofs = begin;                                                                                                                                           \
 		align_ofs = 0;                                                                                                                                          \
 		if (p_mode != PROCESS_CACHE) {                                                                                                                          \
 			lh = line < l.height_caches.size() ? l.height_caches[line] : 1;                                                                                     \
+			line_ascent = line < l.ascent_caches.size() ? l.ascent_caches[line] : 1;                                                                            \
+			line_descent = line < l.descent_caches.size() ? l.descent_caches[line] : 1;                                                                         \
 		}                                                                                                                                                       \
 		if (p_mode == PROCESS_POINTER && r_click_item && p_click_pos.y >= p_ofs.y + y && p_click_pos.y <= p_ofs.y + y + lh && p_click_pos.x < p_ofs.x + wofs) { \
 			if (r_outside) *r_outside = true;                                                                                                                   \
@@ -190,7 +201,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 #define ENSURE_WIDTH(m_width)                                                                                                                                   \
 	if (p_mode == PROCESS_CACHE) {                                                                                                                              \
-		l.minimum_width = MAX(l.minimum_width, wofs + m_width);                                                                                                 \
+		l.maximum_width = MAX(l.maximum_width, MIN(p_width, wofs + m_width));                                                                                   \
+		l.minimum_width = MAX(l.minimum_width, m_width);                                                                                                        \
 	}                                                                                                                                                           \
 	if (wofs + m_width > p_width) {                                                                                                                             \
 		if (p_mode == PROCESS_CACHE) {                                                                                                                          \
@@ -237,6 +249,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 	int rchar = 0;
 	int lh = 0;
 	bool line_is_blank = true;
+	int fh = 0;
 
 	while (it) {
 
@@ -252,8 +265,9 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 				const CharType *c = text->text.c_str();
 				const CharType *cf = c;
-				int fh = font->get_height();
 				int ascent = font->get_ascent();
+				int descent = font->get_descent();
+
 				Color color;
 				bool underline = false;
 
@@ -280,6 +294,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					lh = 0;
 					if (p_mode != PROCESS_CACHE) {
 						lh = line < l.height_caches.size() ? l.height_caches[line] : 1;
+						line_ascent = line < l.ascent_caches.size() ? l.ascent_caches[line] : 1;
+						line_descent = line < l.descent_caches.size() ? l.descent_caches[line] : 1;
 					}
 
 					while (c[end] != 0 && !(end && c[end - 1] == ' ' && c[end] != ' ')) {
@@ -299,7 +315,12 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						end++;
 					}
 
+					CHECK_HEIGHT(fh);
 					ENSURE_WIDTH(w);
+
+					line_ascent = MAX(line_ascent, ascent);
+					line_descent = MAX(line_descent, descent);
+					fh = line_ascent + line_descent;
 
 					if (end && c[end - 1] == ' ') {
 						if (p_mode == PROCESS_CACHE) {
@@ -348,7 +369,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 								int cw = 0;
 
-								bool visible = visible_characters < 0 || p_char_count < visible_characters && YRANGE_VISIBLE(y + lh - (fh - 0 * ascent), fh); //getting rid of ascent seems to work??
+								bool visible = visible_characters < 0 || p_char_count < visible_characters && YRANGE_VISIBLE(y + lh - line_descent - line_ascent, line_ascent + line_descent);
 								if (visible)
 									line_is_blank = false;
 
@@ -360,11 +381,11 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 									cw = font->get_char_size(c[i], c[i + 1]).x;
 									draw_rect(Rect2(p_ofs.x + pofs, p_ofs.y + y, cw, lh), selection_bg);
 									if (visible)
-										font->draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - (fh - ascent)), c[i], c[i + 1], override_selected_font_color ? selection_fg : color);
+										font->draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent), c[i], c[i + 1], override_selected_font_color ? selection_fg : color);
 
 								} else {
 									if (visible)
-										cw = font->draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - (fh - ascent)), c[i], c[i + 1], color);
+										cw = font->draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent), c[i], c[i + 1], color);
 								}
 
 								p_char_count++;
@@ -379,7 +400,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						if (underline) {
 							Color uc = color;
 							uc.a *= 0.5;
-							int uy = y + lh - fh + ascent + 2;
+							int uy = y + lh - line_descent + 2;
 							float underline_width = 1.0;
 #ifdef TOOLS_ENABLED
 							underline_width *= EDSCALE;
@@ -450,6 +471,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					//set minimums to zero
 					for (int i = 0; i < table->columns.size(); i++) {
 						table->columns[i].min_width = 0;
+						table->columns[i].max_width = 0;
 						table->columns[i].width = 0;
 					}
 					//compute minimum width for each cell
@@ -467,6 +489,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 							_process_line(frame, Point2(), ly, available_width, i, PROCESS_CACHE, cfont, Color());
 							table->columns[column].min_width = MAX(table->columns[column].min_width, frame->lines[i].minimum_width);
+							table->columns[column].max_width = MAX(table->columns[column].max_width, frame->lines[i].maximum_width);
 						}
 						idx++;
 					}
@@ -479,12 +502,13 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 					for (int i = 0; i < table->columns.size(); i++) {
 						remaining_width -= table->columns[i].min_width;
+						if (table->columns[i].max_width > table->columns[i].min_width)
+							table->columns[i].expand = true;
 						if (table->columns[i].expand)
 							total_ratio += table->columns[i].expand_ratio;
 					}
 
 					//assign actual widths
-
 					for (int i = 0; i < table->columns.size(); i++) {
 						table->columns[i].width = table->columns[i].min_width;
 						if (table->columns[i].expand)
@@ -1614,7 +1638,7 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 			tag_stack.push_front(tag);
 		} else if (tag.begins_with("cell=")) {
 
-			int ratio = tag.substr(6, tag.length()).to_int();
+			int ratio = tag.substr(5, tag.length()).to_int();
 			if (ratio < 1)
 				ratio = 1;
 			//use monospace font

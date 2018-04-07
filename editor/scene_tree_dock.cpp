@@ -67,6 +67,9 @@ void SceneTreeDock::_unhandled_key_input(Ref<InputEvent> p_event) {
 	if (get_viewport()->get_modal_stack_top())
 		return; //ignore because of modal window
 
+	if (get_focus_owner() && get_focus_owner()->is_text_field())
+		return;
+
 	if (!p_event->is_pressed() || p_event->is_echo())
 		return;
 
@@ -342,16 +345,29 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 		} break;
 		case TOOL_CLEAR_SCRIPT: {
-			Node *selected = scene_tree->get_selected();
-			if (!selected)
-				break;
 
-			Ref<Script> existing = selected->get_script();
-			if (existing.is_valid()) {
-				const RefPtr empty;
-				selected->set_script(empty);
-				_update_script_button();
+			List<Node *> selection = editor_selection->get_selected_node_list();
+
+			if (selection.empty())
+				return;
+
+			editor_data->get_undo_redo().create_action(TTR("Clear Script"));
+			editor_data->get_undo_redo().add_do_method(editor, "push_item", (Script *)NULL);
+
+			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+
+				Ref<Script> existing = E->get()->get_script();
+				if (existing.is_valid()) {
+					const RefPtr empty;
+					editor_data->get_undo_redo().add_do_method(E->get(), "set_script", empty);
+					editor_data->get_undo_redo().add_undo_method(E->get(), "set_script", existing);
+				}
 			}
+
+			editor_data->get_undo_redo().add_do_method(this, "_update_script_button");
+			editor_data->get_undo_redo().add_undo_method(this, "_update_script_button");
+
+			editor_data->get_undo_redo().commit_action();
 
 		} break;
 		case TOOL_MOVE_UP:
@@ -1205,12 +1221,26 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 
 void SceneTreeDock::_script_created(Ref<Script> p_script) {
 
-	Node *selected = scene_tree->get_selected();
-	if (!selected)
+	List<Node *> selected = editor_selection->get_selected_node_list();
+
+	if (selected.empty())
 		return;
-	selected->set_script(p_script.get_ref_ptr());
-	editor->push_item(p_script.operator->());
-	_update_script_button();
+
+	editor_data->get_undo_redo().create_action(TTR("Attach Script"));
+	for (List<Node *>::Element *E = selected.front(); E; E = E->next()) {
+
+		Ref<Script> existing = E->get()->get_script();
+		editor_data->get_undo_redo().add_do_method(E->get(), "set_script", p_script.get_ref_ptr());
+		editor_data->get_undo_redo().add_undo_method(E->get(), "set_script", existing);
+	}
+
+	editor_data->get_undo_redo().add_do_method(editor, "push_item", p_script.operator->());
+	editor_data->get_undo_redo().add_undo_method(editor, "push_item", (Script *)NULL);
+
+	editor_data->get_undo_redo().add_do_method(this, "_update_script_button");
+	editor_data->get_undo_redo().add_undo_method(this, "_update_script_button");
+
+	editor_data->get_undo_redo().commit_action();
 }
 
 void SceneTreeDock::_delete_confirm() {
@@ -1399,70 +1429,81 @@ void SceneTreeDock::_create() {
 			Node *newnode = Object::cast_to<Node>(c);
 			ERR_FAIL_COND(!newnode);
 
-			List<PropertyInfo> pinfo;
-			n->get_property_list(&pinfo);
-
-			for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-				if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
-					continue;
-				if (E->get().name == "__meta__")
-					continue;
-				newnode->set(E->get().name, n->get(E->get().name));
-			}
-
-			editor->push_item(NULL);
-
-			//reconnect signals
-			List<MethodInfo> sl;
-
-			n->get_signal_list(&sl);
-			for (List<MethodInfo>::Element *E = sl.front(); E; E = E->next()) {
-
-				List<Object::Connection> cl;
-				n->get_signal_connection_list(E->get().name, &cl);
-
-				for (List<Object::Connection>::Element *F = cl.front(); F; F = F->next()) {
-
-					Object::Connection &c = F->get();
-					if (!(c.flags & Object::CONNECT_PERSIST))
-						continue;
-					newnode->connect(c.signal, c.target, c.method, varray(), Object::CONNECT_PERSIST);
-				}
-			}
-
-			String newname = n->get_name();
-
-			List<Node *> to_erase;
-			for (int i = 0; i < n->get_child_count(); i++) {
-				if (n->get_child(i)->get_owner() == NULL && n->is_owned_by_parent()) {
-					to_erase.push_back(n->get_child(i));
-				}
-			}
-			n->replace_by(newnode, true);
-
-			if (n == edited_scene) {
-				edited_scene = newnode;
-				editor->set_edited_scene(newnode);
-				newnode->set_editable_instances(n->get_editable_instances());
-			}
-
-			//small hack to make collisionshapes and other kind of nodes to work
-			for (int i = 0; i < newnode->get_child_count(); i++) {
-				Node *c = newnode->get_child(i);
-				c->call("set_transform", c->call("get_transform"));
-			}
-			editor_data->get_undo_redo().clear_history();
-			newnode->set_name(newname);
-
-			editor->push_item(newnode);
-
-			memdelete(n);
-
-			while (to_erase.front()) {
-				memdelete(to_erase.front()->get());
-				to_erase.pop_front();
-			}
+			replace_node(n, newnode);
 		}
+	}
+}
+
+void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node) {
+
+	Node *n = p_node;
+	Node *newnode = p_by_node;
+	Node *default_oldnode = Object::cast_to<Node>(ClassDB::instance(n->get_class()));
+	List<PropertyInfo> pinfo;
+	n->get_property_list(&pinfo);
+
+	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
+		if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
+			continue;
+		if (E->get().name == "__meta__")
+			continue;
+		if (default_oldnode->get(E->get().name) != n->get(E->get().name)) {
+			newnode->set(E->get().name, n->get(E->get().name));
+		}
+	}
+	memdelete(default_oldnode);
+
+	editor->push_item(NULL);
+
+	//reconnect signals
+	List<MethodInfo> sl;
+
+	n->get_signal_list(&sl);
+	for (List<MethodInfo>::Element *E = sl.front(); E; E = E->next()) {
+
+		List<Object::Connection> cl;
+		n->get_signal_connection_list(E->get().name, &cl);
+
+		for (List<Object::Connection>::Element *F = cl.front(); F; F = F->next()) {
+
+			Object::Connection &c = F->get();
+			if (!(c.flags & Object::CONNECT_PERSIST))
+				continue;
+			newnode->connect(c.signal, c.target, c.method, varray(), Object::CONNECT_PERSIST);
+		}
+	}
+
+	String newname = n->get_name();
+
+	List<Node *> to_erase;
+	for (int i = 0; i < n->get_child_count(); i++) {
+		if (n->get_child(i)->get_owner() == NULL && n->is_owned_by_parent()) {
+			to_erase.push_back(n->get_child(i));
+		}
+	}
+	n->replace_by(newnode, true);
+
+	if (n == edited_scene) {
+		edited_scene = newnode;
+		editor->set_edited_scene(newnode);
+		newnode->set_editable_instances(n->get_editable_instances());
+	}
+
+	//small hack to make collisionshapes and other kind of nodes to work
+	for (int i = 0; i < newnode->get_child_count(); i++) {
+		Node *c = newnode->get_child(i);
+		c->call("set_transform", c->call("get_transform"));
+	}
+	editor_data->get_undo_redo().clear_history();
+	newnode->set_name(newname);
+
+	editor->push_item(newnode);
+
+	memdelete(n);
+
+	while (to_erase.front()) {
+		memdelete(to_erase.front()->get());
+		to_erase.pop_front();
 	}
 }
 
@@ -1655,8 +1696,12 @@ void SceneTreeDock::_script_dropped(String p_file, NodePath p_to) {
 	ERR_FAIL_COND(!scr.is_valid());
 	Node *n = get_node(p_to);
 	if (n) {
-		n->set_script(scr.get_ref_ptr());
-		_update_script_button();
+		editor_data->get_undo_redo().create_action(TTR("Attach Script"));
+		editor_data->get_undo_redo().add_do_method(n, "set_script", scr);
+		editor_data->get_undo_redo().add_undo_method(n, "set_script", n->get_script());
+		editor_data->get_undo_redo().add_do_method(this, "_update_script_button");
+		editor_data->get_undo_redo().add_undo_method(this, "_update_script_button");
+		editor_data->get_undo_redo().commit_action();
 	}
 }
 
@@ -1749,6 +1794,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 		subresources.clear();
 		menu_subresources->clear();
+		menu_subresources->set_size(Size2(1, 1));
 		_add_children_to_popup(selection.front()->get(), 0);
 		if (menu->get_item_count() > 0)
 			menu->add_separator();
@@ -1793,6 +1839,10 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 				menu->set_item_checked(menu->get_item_idx_from_text(TTR("Load As Placeholder")), placeholder);
 			}
 		}
+	} else {
+		menu->add_separator();
+		menu->add_icon_shortcut(get_icon("ScriptCreate", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/attach_script"), TOOL_ATTACH_SCRIPT);
+		menu->add_icon_shortcut(get_icon("ScriptRemove", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/clear_script"), TOOL_CLEAR_SCRIPT);
 	}
 	menu->add_separator();
 	menu->add_icon_shortcut(get_icon("Remove", "EditorIcons"), ED_SHORTCUT("scene_tree/delete", TTR("Delete Node(s)"), KEY_DELETE), TOOL_ERASE);
@@ -1882,8 +1932,6 @@ void SceneTreeDock::_local_tree_selected() {
 		remote_tree->hide();
 	edit_remote->set_pressed(false);
 	edit_local->set_pressed(true);
-
-	_node_selected();
 }
 
 void SceneTreeDock::_bind_methods() {
@@ -1913,6 +1961,7 @@ void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_focus_node"), &SceneTreeDock::_focus_node);
 	ClassDB::bind_method(D_METHOD("_remote_tree_selected"), &SceneTreeDock::_remote_tree_selected);
 	ClassDB::bind_method(D_METHOD("_local_tree_selected"), &SceneTreeDock::_local_tree_selected);
+	ClassDB::bind_method(D_METHOD("_update_script_button"), &SceneTreeDock::_update_script_button);
 
 	ClassDB::bind_method(D_METHOD("instance"), &SceneTreeDock::instance);
 

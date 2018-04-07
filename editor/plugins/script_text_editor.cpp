@@ -349,7 +349,12 @@ void ScriptTextEditor::_convert_case(CaseStyle p_case) {
 		int end_col = te->get_selection_to_column();
 
 		for (int i = begin; i <= end; i++) {
-			String new_line = te->get_line(i);
+			int len = te->get_line(i).length();
+			if (i == end)
+				len -= len - end_col;
+			if (i == begin)
+				len -= begin_col;
+			String new_line = te->get_line(i).substr(i == begin ? begin_col : 0, len);
 
 			switch (p_case) {
 				case UPPER: {
@@ -364,10 +369,10 @@ void ScriptTextEditor::_convert_case(CaseStyle p_case) {
 			}
 
 			if (i == begin) {
-				new_line = te->get_line(i).left(begin_col) + new_line.right(begin_col);
+				new_line = te->get_line(i).left(begin_col) + new_line;
 			}
 			if (i == end) {
-				new_line = new_line.left(end_col) + te->get_line(i).right(end_col);
+				new_line = new_line + te->get_line(i).right(end_col);
 			}
 			te->set_line(i, new_line);
 		}
@@ -519,6 +524,7 @@ void ScriptTextEditor::tag_saved_version() {
 
 void ScriptTextEditor::goto_line(int p_line, bool p_with_error) {
 	TextEdit *tx = code_editor->get_text_edit();
+	tx->deselect();
 	tx->unfold_line(p_line);
 	tx->call_deferred("cursor_set_line", p_line);
 }
@@ -567,6 +573,7 @@ void ScriptTextEditor::set_edited_script(const Ref<Script> &p_script) {
 	ERR_FAIL_COND(!script.is_null());
 
 	script = p_script;
+	_set_theme_for_script();
 
 	code_editor->get_text_edit()->set_text(script->get_source_code());
 	code_editor->get_text_edit()->clear_undo_history();
@@ -574,8 +581,6 @@ void ScriptTextEditor::set_edited_script(const Ref<Script> &p_script) {
 
 	emit_signal("name_changed");
 	code_editor->update_line_and_column();
-
-	_set_theme_for_script();
 }
 
 void ScriptTextEditor::_validate_script() {
@@ -783,6 +788,26 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 				emit_signal("go_to_help", "class_method:" + result.class_name + ":" + result.class_member);
 
 			} break;
+			case ScriptLanguage::LookupResult::RESULT_CLASS_ENUM: {
+
+				StringName cname = result.class_name;
+				StringName success;
+				while (true) {
+					success = ClassDB::get_integer_constant_enum(cname, result.class_member, true);
+					if (success != StringName()) {
+						result.class_name = cname;
+						cname = ClassDB::get_parent_class(cname);
+					} else {
+						break;
+					}
+				}
+
+				emit_signal("go_to_help", "class_enum:" + result.class_name + ":" + result.class_member);
+
+			} break;
+			case ScriptLanguage::LookupResult::RESULT_CLASS_TBD_GLOBALSCOPE: {
+				emit_signal("go_to_help", "class_global:" + result.class_name + ":" + result.class_member);
+			} break;
 		}
 	}
 }
@@ -934,13 +959,27 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			Ref<Script> scr = get_edited_script();
 			if (scr.is_null())
 				return;
-
 			tx->begin_complex_operation();
-			int line = tx->cursor_get_line();
-			tx->set_line(tx->cursor_get_line(), "");
-			tx->backspace_at_cursor();
-			tx->unfold_line(line);
-			tx->cursor_set_line(line);
+			if (tx->is_selection_active()) {
+				int to_line = tx->get_selection_to_line();
+				int from_line = tx->get_selection_from_line();
+				int count = Math::abs(to_line - from_line) + 1;
+				while (count) {
+					tx->set_line(tx->cursor_get_line(), "");
+					tx->backspace_at_cursor();
+					count--;
+					if (count)
+						tx->unfold_line(from_line);
+				}
+				tx->cursor_set_line(from_line - 1);
+				tx->deselect();
+			} else {
+				int line = tx->cursor_get_line();
+				tx->set_line(tx->cursor_get_line(), "");
+				tx->backspace_at_cursor();
+				tx->unfold_line(line);
+				tx->cursor_set_line(line);
+			}
 			tx->end_complex_operation();
 		} break;
 		case EDIT_CLONE_DOWN: {
@@ -1225,11 +1264,26 @@ void ScriptTextEditor::_edit_option(int p_op) {
 	}
 }
 
+void ScriptTextEditor::add_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
+	highlighters[p_highlighter->get_name()] = p_highlighter;
+	highlighter_menu->get_popup()->add_item(p_highlighter->get_name());
+}
+
+void ScriptTextEditor::set_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
+	TextEdit *te = code_editor->get_text_edit();
+	te->_set_syntax_highlighting(p_highlighter);
+}
+
+void ScriptTextEditor::_change_syntax_highlighter(int p_idx) {
+	set_syntax_highlighter(highlighters[highlighter_menu->get_popup()->get_item_text(p_idx)]);
+}
+
 void ScriptTextEditor::_bind_methods() {
 
 	ClassDB::bind_method("_validate_script", &ScriptTextEditor::_validate_script);
 	ClassDB::bind_method("_load_theme_settings", &ScriptTextEditor::_load_theme_settings);
 	ClassDB::bind_method("_breakpoint_toggled", &ScriptTextEditor::_breakpoint_toggled);
+	ClassDB::bind_method("_change_syntax_highlighter", &ScriptTextEditor::_change_syntax_highlighter);
 	ClassDB::bind_method("_edit_option", &ScriptTextEditor::_edit_option);
 	ClassDB::bind_method("_goto_line", &ScriptTextEditor::_goto_line);
 	ClassDB::bind_method("_lookup_symbol", &ScriptTextEditor::_lookup_symbol);
@@ -1283,12 +1337,9 @@ Variant ScriptTextEditor::get_drag_data_fw(const Point2 &p_point, Control *p_fro
 bool ScriptTextEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
 
 	Dictionary d = p_data;
-	if (d.has("type") &&
-			(
-
-					String(d["type"]) == "resource" ||
-					String(d["type"]) == "files" ||
-					String(d["type"]) == "nodes")) {
+	if (d.has("type") && (String(d["type"]) == "resource" ||
+								 String(d["type"]) == "files" ||
+								 String(d["type"]) == "nodes")) {
 
 		return true;
 	}
@@ -1329,6 +1380,10 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 	Dictionary d = p_data;
 
+	TextEdit *te = code_editor->get_text_edit();
+	int row, col;
+	te->_get_mouse_pos(p_point, row, col);
+
 	if (d.has("type") && String(d["type"]) == "resource") {
 
 		Ref<Resource> res = d["resource"];
@@ -1341,7 +1396,9 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			return;
 		}
 
-		code_editor->get_text_edit()->insert_text_at_cursor(res->get_path());
+		te->cursor_set_line(row);
+		te->cursor_set_column(col);
+		te->insert_text_at_cursor(res->get_path());
 	}
 
 	if (d.has("type") && String(d["type"]) == "files") {
@@ -1356,7 +1413,9 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			text_to_drop += "\"" + String(files[i]).c_escape() + "\"";
 		}
 
-		code_editor->get_text_edit()->insert_text_at_cursor(text_to_drop);
+		te->cursor_set_line(row);
+		te->cursor_set_column(col);
+		te->insert_text_at_cursor(text_to_drop);
 	}
 
 	if (d.has("type") && String(d["type"]) == "nodes") {
@@ -1385,7 +1444,9 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			text_to_drop += "\"" + path.c_escape() + "\"";
 		}
 
-		code_editor->get_text_edit()->insert_text_at_cursor(text_to_drop);
+		te->cursor_set_line(row);
+		te->cursor_set_column(col);
+		te->insert_text_at_cursor(text_to_drop);
 	}
 }
 
@@ -1607,6 +1668,14 @@ ScriptTextEditor::ScriptTextEditor() {
 	search_menu->get_popup()->connect("id_pressed", this, "_edit_option");
 
 	edit_hb->add_child(edit_menu);
+
+	highlighters["Standard"] = NULL;
+
+	highlighter_menu = memnew(MenuButton);
+	highlighter_menu->set_text(TTR("Syntax Highlighter"));
+	highlighter_menu->get_popup()->add_item("Standard");
+	highlighter_menu->get_popup()->connect("id_pressed", this, "_change_syntax_highlighter");
+	edit_hb->add_child(highlighter_menu);
 
 	quick_open = memnew(ScriptEditorQuickOpen);
 	add_child(quick_open);
