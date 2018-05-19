@@ -102,7 +102,7 @@ Use UI font variant if available, because it has tight vertical metrics and good
 ## freetype
 
 - Upstream: https://www.freetype.org
-- Version: 2.8.1
+- Version: 2.9.1
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
@@ -115,7 +115,7 @@ Files extracted from upstream source:
 ## glad
 
 - Upstream: https://github.com/Dav1dde/glad
-- Version: 0.1.16a0
+- Version: 0.1.20a0
 - License: MIT
 
 The files we package are automatically generated.
@@ -218,7 +218,7 @@ Godot-made change marked with `// -- GODOT --` comments.
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 0.6.1
+- Version: 1.0.0
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -267,7 +267,7 @@ File extracted from upstream release tarball `mbedtls-2.8.0-apache.tgz`:
 ## minizip
 
 - Upstream: http://www.zlib.net
-- Version: 1.2.4 (zlib contrib)
+- Version: 1.2.11 (zlib contrib)
 - License: zlib
 
 Files extracted from the upstream source:
@@ -480,7 +480,7 @@ Files extracted from upstream source:
 ## zstd
 
 - Upstream: https://github.com/facebook/zstd
-- Version: 1.3.3
+- Version: 1.3.4
 - License: BSD-3-Clause
 
 Files extracted from upstream source:

@@ -160,7 +160,7 @@ void ProjectSettingsEditor::_action_edited() {
 		ti->set_text(0, old_name);
 		add_at = "input/" + old_name;
 
-		message->set_text(TTR("Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
+		message->set_text(TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\', or '\"'."));
 		message->popup_centered(Size2(300, 100) * EDSCALE);
 		return;
 	}
@@ -234,6 +234,7 @@ void ProjectSettingsEditor::_device_input_add() {
 			Ref<InputEventJoypadMotion> jm;
 			jm.instance();
 			jm->set_axis(device_index->get_selected() >> 1);
+			jm->set_axis_value(device_index->get_selected() & 1 ? 1 : -1);
 			jm->set_device(_get_current_device());
 
 			bool should_update_event = true;
@@ -243,7 +244,7 @@ void ProjectSettingsEditor::_device_input_add() {
 				Ref<InputEventJoypadMotion> aie = events[i];
 				if (aie.is_null())
 					continue;
-				if (aie->get_device() == jm->get_device() && aie->get_axis() == jm->get_axis()) {
+				if (aie->get_device() == jm->get_device() && aie->get_axis() == jm->get_axis() && aie->get_axis_value() == jm->get_axis_value()) {
 					should_update_event = false;
 					break;
 				}
@@ -424,7 +425,7 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 
 		case INPUT_KEY: {
 
-			press_a_key_label->set_text(TTR("Press a Key.."));
+			press_a_key_label->set_text(TTR("Press a Key..."));
 			last_wait_for_key = Ref<InputEvent>();
 			press_a_key->popup_centered(Size2(250, 80) * EDSCALE);
 			press_a_key->grab_focus();
@@ -767,7 +768,14 @@ void ProjectSettingsEditor::popup_project_settings() {
 	if (EditorSettings::get_singleton()->has_setting("interface/dialogs/project_settings_bounds")) {
 		popup(EditorSettings::get_singleton()->get("interface/dialogs/project_settings_bounds"));
 	} else {
-		popup_centered_ratio();
+
+		Size2 popup_size = Size2(900, 700) * editor_get_scale();
+		Size2 window_size = get_viewport_rect().size;
+
+		popup_size.x = MIN(window_size.x * 0.8, popup_size.x);
+		popup_size.y = MIN(window_size.y * 0.8, popup_size.y);
+
+		popup_centered(popup_size);
 	}
 	globals_editor->update_category_list();
 	_update_translations();
@@ -777,7 +785,7 @@ void ProjectSettingsEditor::popup_project_settings() {
 
 void ProjectSettingsEditor::_item_selected() {
 
-	TreeItem *ti = globals_editor->get_property_editor()->get_scene_tree()->get_selected();
+	TreeItem *ti = globals_editor->get_property_editor()->get_property_tree()->get_selected();
 	if (!ti)
 		return;
 	if (!ti->get_parent())
@@ -1719,7 +1727,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	//globals_editor->hide_top_label();
 	globals_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	globals_editor->register_search_box(search_box);
-	globals_editor->get_property_editor()->get_scene_tree()->connect("cell_selected", this, "_item_selected");
+	globals_editor->get_property_editor()->get_property_tree()->connect("cell_selected", this, "_item_selected");
 	globals_editor->get_property_editor()->connect("property_toggled", this, "_item_checked", varray(), CONNECT_DEFERRED);
 	globals_editor->get_property_editor()->connect("property_edited", this, "_settings_prop_edited");
 
@@ -1731,7 +1739,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	add_prop_bar->add_child(memnew(VSeparator));
 
 	popup_copy_to_feature = memnew(MenuButton);
-	popup_copy_to_feature->set_text(TTR("Override For.."));
+	popup_copy_to_feature->set_text(TTR("Override For..."));
 	popup_copy_to_feature->set_disabled(true);
 	add_prop_bar->add_child(popup_copy_to_feature);
 
@@ -1795,7 +1803,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	add_child(press_a_key);
 
 	l = memnew(Label);
-	l->set_text(TTR("Press a Key.."));
+	l->set_text(TTR("Press a Key..."));
 	l->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	l->set_align(Label::ALIGN_CENTER);
 	l->set_margin(MARGIN_TOP, 20);
@@ -1866,7 +1874,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		tvb->add_child(thb);
 		thb->add_child(memnew(Label(TTR("Translations:"))));
 		thb->add_spacer();
-		Button *addtr = memnew(Button(TTR("Add..")));
+		Button *addtr = memnew(Button(TTR("Add...")));
 		addtr->connect("pressed", this, "_translation_file_open");
 		thb->add_child(addtr);
 		VBoxContainer *tmc = memnew(VBoxContainer);
@@ -1890,7 +1898,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		tvb->add_child(thb);
 		thb->add_child(memnew(Label(TTR("Resources:"))));
 		thb->add_spacer();
-		Button *addtr = memnew(Button(TTR("Add..")));
+		Button *addtr = memnew(Button(TTR("Add...")));
 		addtr->connect("pressed", this, "_translation_res_file_open");
 		thb->add_child(addtr);
 		VBoxContainer *tmc = memnew(VBoxContainer);
@@ -1911,7 +1919,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		tvb->add_child(thb);
 		thb->add_child(memnew(Label(TTR("Remaps by Locale:"))));
 		thb->add_spacer();
-		addtr = memnew(Button(TTR("Add..")));
+		addtr = memnew(Button(TTR("Add...")));
 		addtr->connect("pressed", this, "_translation_res_option_file_open");
 		translation_res_option_add_button = addtr;
 		thb->add_child(addtr);

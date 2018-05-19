@@ -945,8 +945,8 @@ String String::num(double p_num, int p_decimals) {
 
 #ifndef NO_USE_STDLIB
 
-	if (p_decimals > 12)
-		p_decimals = 12;
+	if (p_decimals > 16)
+		p_decimals = 16;
 
 	char fmt[7];
 	fmt[0] = '%';
@@ -2987,6 +2987,40 @@ String String::strip_escapes() const {
 	return substr(beg, end - beg);
 }
 
+String String::lstrip(const Vector<CharType> &p_chars) const {
+
+	int len = length();
+	int beg;
+
+	for (beg = 0; beg < len; beg++) {
+
+		if (p_chars.find(operator[](beg)) == -1)
+			break;
+	}
+
+	if (beg == 0)
+		return *this;
+
+	return substr(beg, len - beg);
+}
+
+String String::rstrip(const Vector<CharType> &p_chars) const {
+
+	int len = length();
+	int end;
+
+	for (end = len - 1; end >= 0; end--) {
+
+		if (p_chars.find(operator[](end)) == -1)
+			break;
+	}
+
+	if (end == len - 1)
+		return *this;
+
+	return substr(0, end + 1);
+}
+
 String String::simplify_path() const {
 
 	String s = *this;
@@ -3438,6 +3472,24 @@ String String::pad_zeros(int p_digits) const {
 	return s;
 }
 
+String String::trim_prefix(const String &p_prefix) const {
+
+	String s = *this;
+	if (s.begins_with(p_prefix)) {
+		return s.substr(p_prefix.length(), s.length() - p_prefix.length());
+	}
+	return s;
+}
+
+String String::trim_suffix(const String &p_suffix) const {
+
+	String s = *this;
+	if (s.ends_with(p_suffix)) {
+		return s.substr(0, s.length() - p_suffix.length());
+	}
+	return s;
+}
+
 bool String::is_valid_integer() const {
 
 	int len = length();
@@ -3703,8 +3755,8 @@ String String::get_file() const {
 String String::get_extension() const {
 
 	int pos = find_last(".");
-	if (pos < 0)
-		return *this;
+	if (pos < 0 || pos < MAX(find_last("/"), find_last("\\")))
+		return "";
 
 	return substr(pos + 1, length());
 }
@@ -3782,7 +3834,7 @@ String String::percent_decode() const {
 String String::get_basename() const {
 
 	int pos = find_last(".");
-	if (pos < 0)
+	if (pos < 0 || pos < MAX(find_last("/"), find_last("\\")))
 		return *this;
 
 	return substr(0, pos);

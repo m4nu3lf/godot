@@ -31,6 +31,7 @@
 #ifndef EDITOR_PLUGIN_H
 #define EDITOR_PLUGIN_H
 
+#include "editor/editor_inspector.h"
 #include "editor/import/editor_import_plugin.h"
 #include "editor/import/resource_importer_scene.h"
 #include "io/config_file.h"
@@ -167,6 +168,7 @@ public:
 	void notify_main_screen_changed(const String &screen_name);
 	void notify_scene_changed(const Node *scn_root);
 	void notify_scene_closed(const String &scene_filepath);
+	void notify_resource_saved(const Ref<Resource> &p_resource);
 
 	virtual Ref<SpatialEditorGizmo> create_spatial_gizmo(Spatial *p_spatial);
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);
@@ -208,6 +210,9 @@ public:
 
 	void add_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
 	void remove_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
+
+	void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
+	void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 
 	void add_scene_import_plugin(const Ref<EditorSceneImporter> &p_importer);
 	void remove_scene_import_plugin(const Ref<EditorSceneImporter> &p_importer);
