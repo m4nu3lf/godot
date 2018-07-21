@@ -2732,7 +2732,7 @@ void RasterizerSceneGLES3::_setup_lights(RID *p_light_cull_result, int p_light_c
 				ubo_data.light_color_energy[0] = linear_col.r * sign * li->light_ptr->param[VS::LIGHT_PARAM_ENERGY] * Math_PI;
 				ubo_data.light_color_energy[1] = linear_col.g * sign * li->light_ptr->param[VS::LIGHT_PARAM_ENERGY] * Math_PI;
 				ubo_data.light_color_energy[2] = linear_col.b * sign * li->light_ptr->param[VS::LIGHT_PARAM_ENERGY] * Math_PI;
-				ubo_data.light_color_energy[3] = 0;
+				ubo_data.light_color_energy[3] = linear_col.a * sign * li->light_ptr->param[VS::LIGHT_PARAM_ENERGY] * Math_PI;
 
 				Vector3 pos = p_camera_inverse_transform.xform(li->transform.origin);
 

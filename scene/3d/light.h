@@ -78,6 +78,7 @@ private:
 	bool negative;
 	bool reverse_cull;
 	uint32_t cull_mask;
+	uint32_t shadow_cull_mask;
 	VS::LightType type;
 	bool editor_only;
 	void _update_visibility();
@@ -118,6 +119,9 @@ public:
 
 	void set_shadow_color(const Color &p_shadow_color);
 	Color get_shadow_color() const;
+
+	void set_shadow_cull_mask(uint32_t p_cull_mask);
+	uint32_t get_shadow_cull_mask() const;
 
 	void set_shadow_reverse_cull_face(bool p_enable);
 	bool get_shadow_reverse_cull_face() const;

@@ -108,6 +108,16 @@ Color Light::get_shadow_color() const {
 	return shadow_color;
 }
 
+void Light::set_shadow_cull_mask(uint32_t p_cull_mask) {
+
+	shadow_cull_mask = p_cull_mask;
+	//VS::get_singleton()->light_set_shadow_cull_mask(light, p_cull_mask);
+}
+uint32_t Light::get_shadow_cull_mask() const {
+
+	return shadow_cull_mask;
+}
+
 void Light::set_shadow_reverse_cull_face(bool p_enable) {
 	reverse_cull = p_enable;
 	VS::get_singleton()->light_set_reverse_cull_face_mode(light, reverse_cull);
@@ -228,11 +238,14 @@ void Light::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shadow_color", "shadow_color"), &Light::set_shadow_color);
 	ClassDB::bind_method(D_METHOD("get_shadow_color"), &Light::get_shadow_color);
 
+	ClassDB::bind_method(D_METHOD("set_shadow_cull_mask", "shadow_cull_mask"), &Light::set_shadow_cull_mask);
+	ClassDB::bind_method(D_METHOD("get_shadow_cull_mask"), &Light::get_shadow_cull_mask);
+
 	ClassDB::bind_method(D_METHOD("set_bake_mode", "bake_mode"), &Light::set_bake_mode);
 	ClassDB::bind_method(D_METHOD("get_bake_mode"), &Light::get_bake_mode);
 
 	ADD_GROUP("Light", "light_");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "light_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_color", "get_color");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "light_color"), "set_color", "get_color");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "light_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_param", "get_param", PARAM_ENERGY);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "light_indirect_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_param", "get_param", PARAM_INDIRECT_ENERGY);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "light_negative"), "set_negative", "is_negative");
@@ -241,10 +254,11 @@ void Light::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_cull_mask", "get_cull_mask");
 	ADD_GROUP("Shadow", "shadow_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_enabled"), "set_shadow", "has_shadow");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "shadow_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_shadow_color", "get_shadow_color");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "shadow_color"), "set_shadow_color", "get_shadow_color");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "shadow_bias", PROPERTY_HINT_RANGE, "-16,16,0.01"), "set_param", "get_param", PARAM_SHADOW_BIAS);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "shadow_contact", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_param", "get_param", PARAM_CONTACT_SHADOW_SIZE);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_reverse_cull_face"), "set_shadow_reverse_cull_face", "get_shadow_reverse_cull_face");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_shadow_cull_mask", "get_shadow_cull_mask");
 	ADD_GROUP("Editor", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_only"), "set_editor_only", "is_editor_only");
 	ADD_GROUP("", "");

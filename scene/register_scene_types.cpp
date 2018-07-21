@@ -197,6 +197,7 @@
 #include "scene/3d/sprite_3d.h"
 #include "scene/3d/vehicle_body.h"
 #include "scene/3d/visibility_notifier.h"
+#include "scene/3d/visibility_probe.h"
 #include "scene/resources/environment.h"
 #endif
 
@@ -379,6 +380,7 @@ void register_scene_types() {
 	ClassDB::register_class<ReflectionProbe>();
 	ClassDB::register_class<GIProbe>();
 	ClassDB::register_class<GIProbeData>();
+	ClassDB::register_class<OmniVisibilityProbe>();
 	ClassDB::register_class<BakedLightmap>();
 	ClassDB::register_class<BakedLightmapData>();
 	ClassDB::register_class<AnimationTreePlayer>();
